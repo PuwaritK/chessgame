@@ -3,9 +3,11 @@ import pygame
 
 def initialize():
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE | pygame.SCALED)
+    background_colour = (247, 202, 201)  # Rose Quartz
     clock = pygame.time.Clock()
     caption = pygame.display.set_caption("Goofy AHH chessgame")
+
     running = True
     while running:
         for event in pygame.event.get():
