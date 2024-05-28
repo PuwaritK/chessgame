@@ -1,46 +1,14 @@
 import pygame
 
+FPS = 30
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
 
-def initialize():
+
+def initialize() -> pygame.Surface:
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE | pygame.SCALED)
-    background_colour = (247, 202, 201)  # Rose Quartz
+    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
     clock = pygame.time.Clock()
-    caption = pygame.display.set_caption("Goofy AHH chessgame")
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-
-# import pygame, sys
-
-# pygame.init()
-# # Create the window, saving it to a variable.
-# surface = pygame.display.set_mode((350, 250), pygame.RESIZABLE)
-# pygame.display.set_caption("Example resizable window")
-
-# while True:
-#     surface.fill((255,255,255))
-
-#     # Draw a red rectangle that resizes with the window.
-#     pygame.draw.rect(surface, (200,0,0), (surface.get_width()/3,
-#       surface.get_height()/3, surface.get_width()/3,
-#       surface.get_height()/3))
-
-#     pygame.display.update()
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             pygame.quit()
-#             sys.exit()
-#         if event.type == pygame.KEYDOWN:
-#             if event.key == pygame.K_ESCAPE:
-#                 pygame.quit()
-#                 sys.exit()
-
-#         if event.type == pygame.VIDEORESIZE:
-#             # There's some code to add back window content here.
-#             surface = pygame.display.set_mode((event.w, event.h),
-#                                               pygame.RESIZABLE)
+    clock.tick(FPS)
+    pygame.display.set_caption("Goofy AHH chessgame")
+    return screen
