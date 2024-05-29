@@ -36,3 +36,6 @@ class Board:
         if x < 0 or y < 0:
             raise KeyError("you tried to get invalid piece")
         return self.tiles[x][y]
+
+    def is_in_bound(self, x: int, y: int):
+        return x in range(0, TILES_COUNT + 1) and y in range(0, TILES_COUNT + 1)
