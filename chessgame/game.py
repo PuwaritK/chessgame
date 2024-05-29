@@ -1,12 +1,15 @@
 import pygame
 from chessgame import board
 import sys
-from button import Button
+from .button import Button
 
 BACKGROUND_COLOUR = (247, 202, 201)  # Rose Quartz
 
+FPS = 30
+
 
 def run(screen: pygame.Surface):
+    clock = pygame.time.Clock()
     while True:
         screen.fill(BACKGROUND_COLOUR)
         board.draw_checkers(screen)
@@ -22,11 +25,15 @@ def run(screen: pygame.Surface):
                     height = 720
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                for button in Button.buttons:
+                    if button.is_mouse_on():
+                        button.on_click()
 
         for button in Button.buttons:
             if button.is_mouse_on():
-                pass
+                button.hover(button)
             else:
-                pass
+                button.unhover(button)
+            pygame.draw.rect(screen, (0, 0, 0), button.button)
         pygame.display.update()
+        clock.tick(FPS)
