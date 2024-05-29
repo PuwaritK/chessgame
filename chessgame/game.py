@@ -1,9 +1,9 @@
 import pygame
-from chessgame import board
+from chessgame import background
 import sys
 from .button import Button
 
-BACKGROUND_COLOUR = (247, 202, 201)  # Rose Quartz
+BACKGROUND_COLOR = (247, 202, 201)  # Rose Quartz
 
 FPS = 30
 
@@ -11,8 +11,8 @@ FPS = 30
 def run(screen: pygame.Surface):
     clock = pygame.time.Clock()
     while True:
-        screen.fill(BACKGROUND_COLOUR)
-        board.draw_checkers(screen)
+        screen.fill(BACKGROUND_COLOR)
+        background.draw_checkers(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()

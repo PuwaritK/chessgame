@@ -1,67 +1,24 @@
 import pygame
+from .piece import Piece
 
-# board goes from A to H columns and 1 to 8 rows (8*8)
-
-LIGHT_BROWN = (232, 221, 176)
-DARK_BROWN = (170, 141, 94)
+TILES_COUNT = 8
 
 
-def draw_checkers(screen: pygame.Surface):
-    if screen.get_height() < screen.get_width():
-        rect_height = screen.get_height() // 8
-        rect_width = rect_height
-        left = (screen.get_width() - screen.get_height()) // 2
-        top = (screen.get_height() % rect_height) // 2
-    else:
-        rect_height = screen.get_width() // 8
-        rect_width = rect_height
-        left = (screen.get_width() % rect_width) // 2
-        top = (screen.get_height() - screen.get_width()) // 2
-    for i in range(8):
-        for j in range(8):
-            if i % 2 == 0:
-                if j % 2 == 0:
-                    pygame.draw.rect(
-                        screen,
-                        LIGHT_BROWN,
-                        (
-                            left + rect_width * j,
-                            top + rect_height * i,
-                            rect_width,
-                            rect_height,
-                        ),
-                    )
-                else:
-                    pygame.draw.rect(
-                        screen,
-                        DARK_BROWN,
-                        (
-                            left + rect_width * j,
-                            top + rect_height * i,
-                            rect_width,
-                            rect_height,
-                        ),
-                    )
-            else:
-                if j % 2 == 0:
-                    pygame.draw.rect(
-                        screen,
-                        DARK_BROWN,
-                        (
-                            left + rect_width * j,
-                            top + rect_height * i,
-                            rect_width,
-                            rect_height,
-                        ),
-                    )
-                else:
-                    pygame.draw.rect(
-                        screen,
-                        LIGHT_BROWN,
-                        (
-                            left + rect_width * j,
-                            top + rect_height * i,
-                            rect_width,
-                            rect_height,
-                        ),
-                    )
+class Board:
+    tiles: list[list[Piece | None]]
+
+    def __init__(self) -> None:
+        self.black_count = 16
+        self.white_count = 16
+        self.tiles = []
+        for _ in range(TILES_COUNT):
+            self.tiles.append([None] * TILES_COUNT)
+
+    def move_piece(self, x1: int, y1: int, x2: int, y2: int):
+        self.tiles[x2][y2] = self.get_piece(x1, y1)
+        self.tiles[x1][y1] = None
+
+    def get_piece(self, x: int, y: int) -> Piece | None:
+        if x < 0 or y < 0:
+            raise KeyError("you moved the piece out of the board")
+        return self.tiles[x][y]
