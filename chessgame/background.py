@@ -6,7 +6,7 @@ LIGHT_BROWN = (232, 221, 176)
 DARK_BROWN = (170, 141, 94)
 
 
-def draw_checkers(screen: pygame.Surface):
+def draw_checkers(screen: pygame.Surface) -> tuple[int, int, int, int]:
     if screen.get_height() < screen.get_width():
         rect_height = screen.get_height() // 8
         rect_width = rect_height
@@ -65,3 +65,4 @@ def draw_checkers(screen: pygame.Surface):
                             rect_height,
                         ),
                     )
+    return left, top, rect_width, rect_height

@@ -20,9 +20,9 @@ class Board:
             raise ValueError("you tried to move nothing")
         moved_piece.pos_x = x2
         moved_piece.pos_y = y2
-        target = self.tiles[x2][y2]
+        target = self.tiles[y2][x2]
         if target is None:
-            self.tiles[x1][y1] = None
+            self.tiles[y1][x1] = None
             return
         if moved_piece.color == target.color:
             raise Exception("you killed your own kind")
@@ -32,12 +32,12 @@ class Board:
             self.black_count -= 1
         moved_piece.has_moved = True
         moved_piece.enpassant = None
-        self.tiles[x1][y1] = None
+        self.tiles[y1][x1] = None
 
     def get_piece(self, x: int, y: int) -> Piece | None:
         if x < 0 or y < 0:
             raise KeyError("you tried to get invalid piece")
-        return self.tiles[x][y]
+        return self.tiles[y][x]
 
     def is_in_bound(self, x: int, y: int):
         return x in range(0, TILES_COUNT + 1) and y in range(0, TILES_COUNT + 1)
