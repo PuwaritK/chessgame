@@ -1,9 +1,10 @@
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 from itertools import repeat
 
 if TYPE_CHECKING:
     from .board import Board
+
 
 NSEW = (
     zip(repeat(0), range(-1, -8, -1)),  # north
@@ -25,7 +26,7 @@ class Piece:
         self,
         piece_type: "PieceType",
         color: "PieceColor",
-        board: Board,
+        board: "Board",
         x: int,
         y: int,
     ) -> None:
@@ -124,8 +125,12 @@ class Piece:
     def is_any_piece(self, x: int, y: int) -> bool:
         return self.board.get_piece(x, y) is not None
 
+    zip()
+
     def __legit_moves(
-        self, direction: zip[tuple[int, int]], possible_tiles: list[tuple[int, int]]
+        self,
+        direction: Iterable[tuple[int, int]],
+        possible_tiles: list[tuple[int, int]],
     ):
         for offset_x, offset_y in direction:
             x = self.pos_x + offset_x
