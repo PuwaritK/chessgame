@@ -6,19 +6,22 @@ if TYPE_CHECKING:
     from .board import Board
 
 
-NSEW = (
-    zip(repeat(0), range(-1, -8, -1)),  # north
-    zip(repeat(0), range(1, 8)),  # south
-    zip(range(1, 8), repeat(0)),  # east
-    zip(range(-1, -8, -1), repeat(0)),  # west
-)
+def get_nsew():
+    return (
+        zip(repeat(0), range(-1, -8, -1)),  # north
+        zip(repeat(0), range(1, 8)),  # south
+        zip(range(1, 8), repeat(0)),  # east
+        zip(range(-1, -8, -1), repeat(0)),  # west
+    )
 
-DIAGONALS = (
-    zip(range(1, 8), range(-1, -8, -1)),  # north east
-    zip(range(1, 8), range(1, 8)),  # south east
-    zip(range(-1, -8, -1), range(-1, -8, -1)),  # north west
-    zip(range(-1, -8, -1), range(1, 8)),  # south west)
-)
+
+def get_diagnals():
+    return (
+        zip(range(1, 8), range(-1, -8, -1)),  # north east
+        zip(range(1, 8), range(1, 8)),  # south east
+        zip(range(-1, -8, -1), range(-1, -8, -1)),  # north west
+        zip(range(-1, -8, -1), range(1, 8)),  # south west)
+    )
 
 
 class Piece:
@@ -57,15 +60,15 @@ class Piece:
                         possible_tiles.append((x, y))
 
             case PieceType.ROOK:
-                for direction in NSEW:
+                for direction in get_nsew():
                     self.__legit_moves(direction, possible_tiles)
 
             case PieceType.QUEEN:
-                for direction in (*DIAGONALS, *NSEW):
+                for direction in (*get_diagnals(), *get_nsew()):
                     self.__legit_moves(direction, possible_tiles)
 
             case PieceType.BISHOP:
-                for direction in DIAGONALS:
+                for direction in get_diagnals():
                     self.__legit_moves(direction, possible_tiles)
 
             case PieceType.KNIGHT:
@@ -98,12 +101,16 @@ class Piece:
                     (self.pos_x - 1, self.pos_y - direction),
                     (self.pos_x + 1, self.pos_y - direction),
                 ):
+                    if not self.board.is_in_bound(x, y):
+                        continue
                     if self.is_enemy(x, y):
                         possible_tiles.append((x, y))
 
                 for offset_y in range(1, 2 if self.has_moved else 3):
                     x = self.pos_x
-                    y = self.pos_y + offset_y * direction
+                    y = self.pos_y - offset_y * direction
+                    if not self.board.is_in_bound(x, y):
+                        continue
                     if self.is_any_piece(x, y):
                         break
                     possible_tiles.append((x, y))

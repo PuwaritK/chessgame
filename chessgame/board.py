@@ -1,7 +1,8 @@
 import pygame
 from .piece import Piece, PieceColor, PieceType
 
-TILES_COUNT = 8
+TILES_COUNT_X = 8
+TILES_COUNT_Y = 8
 
 
 class Board:
@@ -11,8 +12,8 @@ class Board:
         self.black_count = 16
         self.white_count = 16
         self.tiles = []
-        for _ in range(TILES_COUNT):
-            self.tiles.append([None] * TILES_COUNT)
+        for _ in range(TILES_COUNT_Y):
+            self.tiles.append([None] * TILES_COUNT_X)
 
     def move_piece(self, x1: int, y1: int, x2: int, y2: int):
         moved_piece = self.get_piece(x1, y1)
@@ -21,8 +22,11 @@ class Board:
         moved_piece.pos_x = x2
         moved_piece.pos_y = y2
         target = self.tiles[y2][x2]
+        moved_piece.has_moved = True
+        moved_piece.enpassant = None
+        self.tiles[y1][x1] = None
+        self.tiles[y2][x2] = moved_piece
         if target is None:
-            self.tiles[y1][x1] = None
             return
         if moved_piece.color == target.color:
             raise Exception("you killed your own kind")
@@ -30,9 +34,6 @@ class Board:
             self.white_count -= 1
         elif target.color == PieceColor.BLACK:
             self.black_count -= 1
-        moved_piece.has_moved = True
-        moved_piece.enpassant = None
-        self.tiles[y1][x1] = None
 
     def get_piece(self, x: int, y: int) -> Piece | None:
         if x < 0 or y < 0:
@@ -40,7 +41,7 @@ class Board:
         return self.tiles[y][x]
 
     def is_in_bound(self, x: int, y: int):
-        return x in range(0, TILES_COUNT + 1) and y in range(0, TILES_COUNT + 1)
+        return x in range(0, TILES_COUNT_X) and y in range(0, TILES_COUNT_Y)
 
 
 def get_default_board() -> Board:
