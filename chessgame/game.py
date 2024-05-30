@@ -3,7 +3,7 @@ import sys
 from . import background
 from .board import Board, get_default_board
 from .display import render_pieces, get_image_dict
-from .piece import Piece
+from .piece import Piece, PieceColor
 
 
 BACKGROUND_COLOR = (247, 202, 201)  # Rose Quartz
@@ -18,6 +18,7 @@ def run(screen: pygame.Surface):
     images = get_image_dict()
     piece: Piece | None = None
     available_moves: list[tuple[int, int]] | None = None
+    turn = PieceColor.WHITE
     while True:
         screen.fill(BACKGROUND_COLOR)
         pos_and_size = background.draw_checkers(screen, available_moves)
@@ -42,9 +43,14 @@ def run(screen: pygame.Surface):
                     board.move_piece(piece.pos_x, piece.pos_y, coord[0], coord[1])
                     available_moves = None
                     piece = None
+                    if turn == PieceColor.WHITE:
+                        turn = PieceColor.BLACK
+                    elif turn == PieceColor.BLACK:
+                        turn = PieceColor.WHITE
                     continue
                 piece = board.get_piece(coord[0], coord[1])
-                if piece is None:
+                if piece is None or piece.color != turn:
+                    piece = None
                     available_moves = None
                     continue
                 available_moves = piece.available_moves()
