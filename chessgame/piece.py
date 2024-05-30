@@ -132,8 +132,6 @@ class Piece:
     def is_any_piece(self, x: int, y: int) -> bool:
         return self.board.get_piece(x, y) is not None
 
-    zip()
-
     def __legit_moves(
         self,
         direction: Iterable[tuple[int, int]],
