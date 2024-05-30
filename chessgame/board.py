@@ -18,8 +18,8 @@ class Board:
         moved_piece = self.get_piece(x1, y1)
         if moved_piece is None:
             raise ValueError("you tried to move nothing")
-        moved_piece.posX = x2
-        moved_piece.posY = y2
+        moved_piece.pos_x = x2
+        moved_piece.pos_y = y2
         target = self.tiles[x2][y2]
         if target is None:
             self.tiles[x1][y1] = None
@@ -30,6 +30,8 @@ class Board:
             self.white_count -= 1
         elif target.color == PieceColor.BLACK:
             self.black_count -= 1
+        moved_piece.has_moved = True
+        moved_piece.enpassant = None
         self.tiles[x1][y1] = None
 
     def get_piece(self, x: int, y: int) -> Piece | None:
