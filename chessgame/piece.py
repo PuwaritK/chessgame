@@ -37,6 +37,8 @@ class Piece:
         self.has_moved = False
         self.enpassant: tuple[int, int] | None = None
 
+        board.tiles[y][x] = self
+
     def available_moves(self) -> list[tuple[int, int]]:
         possible_tiles: list[tuple[int, int]] = []
         match self.piece_type:
