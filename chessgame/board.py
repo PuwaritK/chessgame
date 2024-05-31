@@ -1,8 +1,5 @@
 import pygame
-from .piece import Piece, PieceColor, PieceType
-
-TILES_COUNT_X = 8
-TILES_COUNT_Y = 8
+from .piece import Piece, PieceColor, PieceType, TILES_COUNT_X, TILES_COUNT_Y
 
 
 class Board:
