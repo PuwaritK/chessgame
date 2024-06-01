@@ -55,25 +55,50 @@ class Piece:
         self.pos_y = y
         self.has_moved = False
         self.enpassant: tuple[int, int] | None = None
+        self.is_invis = False
 
         board.tiles[y][x] = self
 
     def available_moves(self) -> list[tuple[int, int]]:
         possible_tiles: list[tuple[int, int]] = []
-        match self.piece_type:
-            case PieceType.KING:
-                for offset_x in range(-1, 2):
-                    for offset_y in range(-1, 2):
-                        if offset_x == 0 and offset_y == 0:
-                            continue
-                        x = self.pos_x + offset_x
-                        y = self.pos_y + offset_y
-                        if not self.board.is_in_bound(x, y):
-                            continue
-                        if self.is_ally(x, y):
-                            continue
-                        possible_tiles.append((x, y))
+        is_checked = self.is_king_attacked()
 
+        if self.piece_type == PieceType.KING:
+            for offset_x in range(-1, 2):
+                for offset_y in range(-1, 2):
+                    if offset_x == 0 and offset_y == 0:
+                        continue
+                    x = self.pos_x + offset_x
+                    y = self.pos_y + offset_y
+                    if not self.board.is_in_bound(x, y):
+                        continue
+                    if self.is_ally(x, y):
+                        continue
+                    if self.is_coord_attacked(x, y):
+                        continue
+                    possible_tiles.append((x, y))
+            if not is_checked:
+                return possible_tiles
+            new_possible_tile: list[tuple[int, int]] = []
+            self.board.tiles[self.pos_y][self.pos_x] = None
+            old_pos_x = self.pos_x
+            old_pos_y = self.pos_y
+            for possible_tile in possible_tiles:
+                self.pos_x = possible_tile[0]
+                self.pos_y = possible_tile[1]
+                old_piece = self.board.get_piece(possible_tile[0], possible_tile[1])
+                self.board.tiles[possible_tile[1]][possible_tile[0]] = self
+                if not self.is_king_attacked():
+                    new_possible_tile.append(possible_tile)
+                self.board.tiles[possible_tile[1]][possible_tile[0]] = old_piece
+            self.pos_x = old_pos_x
+            self.pos_y = old_pos_y
+            self.board.tiles[self.pos_y][self.pos_x] = self
+            return new_possible_tile
+
+        if not is_checked and self.is_pinned():
+            return []
+        match self.piece_type:
             case PieceType.ROOK:
                 for direction in get_nsew():
                     self.__legit_moves(direction, possible_tiles)
@@ -122,8 +147,16 @@ class Piece:
                     if self.is_any_piece(x, y):
                         break
                     possible_tiles.append((x, y))
-
-        return possible_tiles
+        if not is_checked:
+            return possible_tiles
+        new_possible_tile: list[tuple[int, int]] = []
+        for possible_tile in possible_tiles:
+            old_piece = self.board.get_piece(possible_tile[0], possible_tile[1])
+            self.board.tiles[possible_tile[1]][possible_tile[0]] = self
+            if not self.is_king_attacked():
+                new_possible_tile.append(possible_tile)
+            self.board.tiles[possible_tile[1]][possible_tile[0]] = old_piece
+        return new_possible_tile
 
     def is_ally(self, x: int, y: int) -> bool:
         them = self.board.get_piece(x, y)
@@ -162,7 +195,7 @@ class Piece:
                 if not self.board.is_in_bound(x + offset_x, y + offset_y):
                     break
                 selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
-                if selected_piece is None:
+                if selected_piece is None or selected_piece.is_invis:
                     continue
                 if selected_piece.color == self.color:
                     break
@@ -174,20 +207,21 @@ class Piece:
                 if not self.board.is_in_bound(x + offset_x, y + offset_y):
                     break
                 selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
-                if selected_piece is None:
+                if selected_piece is None or selected_piece.is_invis:
                     continue
                 if selected_piece.color == self.color:
                     break
-                if selected_piece.piece_type in (PieceType.ROOK, PieceType.QUEEN):
+                if selected_piece.piece_type in (PieceType.BISHOP, PieceType.QUEEN):
                     return True
                 break
         for offset_x, offset_y in KNIGHT_OFFSETS:
             if not self.board.is_in_bound(x + offset_x, y + offset_y):
                 continue
             selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
+            if selected_piece is None:
+                continue
             if (
-                selected_piece is not None
-                and selected_piece.piece_type == PieceType.KNIGHT
+                selected_piece.piece_type == PieceType.KNIGHT
                 and selected_piece.color != self.color
             ):
                 return True
@@ -198,16 +232,17 @@ class Piece:
                 if not self.board.is_in_bound(x + offset_x, y + offset_y):
                     continue
                 selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
+                if selected_piece is None:
+                    continue
                 if (
-                    selected_piece is not None
-                    and selected_piece.piece_type == PieceType.KING
+                    selected_piece.piece_type == PieceType.KING
                     and selected_piece.color != self.color
                 ):
                     return True
         if self.color == PieceColor.WHITE:
-            pawn_direction = 1
-        elif self.color == PieceColor.BLACK:
             pawn_direction = -1
+        elif self.color == PieceColor.BLACK:
+            pawn_direction = 1
         for offset_x, offset_y in (
             (-1, pawn_direction),
             (+1, pawn_direction),
@@ -215,13 +250,29 @@ class Piece:
             if not self.board.is_in_bound(x + offset_x, y + offset_y):
                 continue
             selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
+            if selected_piece is None:
+                continue
             if (
-                selected_piece is not None
-                and selected_piece.piece_type == PieceType.PAWN
+                selected_piece.piece_type == PieceType.PAWN
                 and selected_piece.color != self.color
             ):
                 return True
         return False
+
+    def is_pinned(self) -> bool:
+        self.is_invis = True
+        is_king_attacked = self.is_king_attacked()
+        self.is_invis = False
+        return is_king_attacked
+
+    def is_king_attacked(self) -> bool:
+        if self.color == PieceColor.WHITE:
+            king = self.board.white_king
+        elif self.color == PieceColor.BLACK:
+            king = self.board.black_king
+        if king is None:
+            raise Exception("How king dead")
+        return self.is_coord_attacked(king.pos_x, king.pos_y)
 
 
 class PieceType(Enum):

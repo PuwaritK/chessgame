@@ -9,6 +9,8 @@ class Board:
         self.black_count = 16
         self.white_count = 16
         self.tiles = []
+        self.white_king: Piece | None = None
+        self.black_king: Piece | None = None
         for _ in range(TILES_COUNT_Y):
             self.tiles.append([None] * TILES_COUNT_X)
 
@@ -47,7 +49,7 @@ def get_default_board() -> Board:
     Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 1, 0)
     Piece(PieceType.BISHOP, PieceColor.BLACK, board, 2, 0)
     Piece(PieceType.QUEEN, PieceColor.BLACK, board, 3, 0)
-    Piece(PieceType.KING, PieceColor.BLACK, board, 4, 0)
+    board.black_king = Piece(PieceType.KING, PieceColor.BLACK, board, 4, 0)
     Piece(PieceType.BISHOP, PieceColor.BLACK, board, 5, 0)
     Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 6, 0)
     Piece(PieceType.ROOK, PieceColor.BLACK, board, 7, 0)
@@ -63,7 +65,7 @@ def get_default_board() -> Board:
     Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 1, 7)
     Piece(PieceType.BISHOP, PieceColor.WHITE, board, 2, 7)
     Piece(PieceType.QUEEN, PieceColor.WHITE, board, 3, 7)
-    Piece(PieceType.KING, PieceColor.WHITE, board, 4, 7)
+    board.white_king = Piece(PieceType.KING, PieceColor.WHITE, board, 4, 7)
     Piece(PieceType.BISHOP, PieceColor.WHITE, board, 5, 7)
     Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 6, 7)
     Piece(PieceType.ROOK, PieceColor.WHITE, board, 7, 7)
