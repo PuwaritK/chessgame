@@ -11,6 +11,7 @@ class Board:
         self.tiles = []
         self.white_king: Piece | None = None
         self.black_king: Piece | None = None
+        self.promoted_piece: Piece | None = None
         for _ in range(TILES_COUNT_Y):
             self.tiles.append([None] * TILES_COUNT_X)
 
@@ -23,6 +24,11 @@ class Board:
         target = self.tiles[y2][x2]
         moved_piece.has_moved = True
         moved_piece.enpassant = None
+        if moved_piece.piece_type == PieceType.PAWN and (
+            (y2 == 7 and moved_piece.color == PieceColor.BLACK)
+            or (y2 == 0 and moved_piece.color == PieceColor.WHITE)
+        ):
+            self.promoted_piece = moved_piece
         self.tiles[y1][x1] = None
         self.tiles[y2][x2] = moved_piece
         if target is None:

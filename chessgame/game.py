@@ -2,7 +2,13 @@ import pygame
 import sys
 from . import background
 from .board import Board, get_default_board
-from .display import render_pieces, get_image_dict
+from .display import (
+    render_pieces,
+    get_image_dict,
+    render_promotion,
+    WINDOW_HEIGHT,
+    WINDOW_WIDTH,
+)
 from .piece import Piece, PieceColor
 
 
@@ -10,6 +16,7 @@ BACKGROUND_COLOR = (247, 202, 201)  # Rose Quartz
 MIN_WIDTH = 640
 MIN_HEIGHT = 480
 FPS = 30
+BLURRED_BLACK = (0, 0, 0, 192)
 
 
 def run(screen: pygame.Surface):
@@ -23,12 +30,19 @@ def run(screen: pygame.Surface):
         screen.fill(BACKGROUND_COLOR)
         pos_and_size = background.draw_checkers(screen, available_moves)
         render_pieces(screen, board.tiles, pos_and_size, images)
+        if board.promoted_piece is not None:
+            black_scrn = pygame.Surface(
+                (screen.get_width(), screen.get_height()), pygame.SRCALPHA
+            )
+            black_scrn.fill(BLURRED_BLACK)
+            screen.blit(black_scrn, (0, 0))
+            render_promotion(screen, board.promoted_piece, pos_and_size, images)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
             elif event.type == pygame.VIDEORESIZE:
-                width, height = event.size
+                width, height = event.size  # type: ignore
                 if width < MIN_WIDTH:
                     width = MIN_WIDTH
                 if height < MIN_HEIGHT:
