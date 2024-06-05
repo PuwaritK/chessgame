@@ -6,8 +6,8 @@ from .display import (
     render_pieces,
     get_image_dict,
     render_promotion,
-    WINDOW_HEIGHT,
-    WINDOW_WIDTH,
+    PIECE_TYPE_COUNT,
+    PROMOTION_PIECE_TYPES,
 )
 from .piece import Piece, PieceColor
 
@@ -36,7 +36,9 @@ def run(screen: pygame.Surface):
             )
             black_scrn.fill(BLURRED_BLACK)
             screen.blit(black_scrn, (0, 0))
-            render_promotion(screen, board.promoted_piece, pos_and_size, images)
+            offset_x, offset_y = render_promotion(
+                screen, board.promoted_piece, pos_and_size, images
+            )
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -49,6 +51,22 @@ def run(screen: pygame.Surface):
                     height = MIN_HEIGHT
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                if board.promoted_piece is not None:
+                    pos_x, pos_y = pygame.mouse.get_pos()
+                    index_x = (
+                        pos_x - (pos_and_size[0] + pos_and_size[2] * offset_x)
+                    ) // pos_and_size[2]
+                    index_y = (
+                        pos_y - (pos_and_size[1] + pos_and_size[3] * offset_y)
+                    ) // pos_and_size[3]
+                    if index_x not in range(PIECE_TYPE_COUNT) and index_y != 0:
+                        continue
+                    board.promoted_piece.piece_type = PROMOTION_PIECE_TYPES[
+                        int(index_x)
+                    ]
+                    board.promoted_piece = None
+                    continue
+
                 coord = get_coord_on_click(board, pos_and_size)
                 if coord is None:
                     continue

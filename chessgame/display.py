@@ -6,6 +6,15 @@ from time import sleep
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
+PROMOTION_PIECE_TYPES = (
+    PieceType.ROOK,
+    PieceType.QUEEN,
+    PieceType.BISHOP,
+    PieceType.KNIGHT,
+)
+
+PIECE_TYPE_COUNT = len(PROMOTION_PIECE_TYPES)
+
 
 def _get_image(file_name: str) -> pygame.Surface:
     return pygame.image.load(f"./chessgame/assets/{file_name}.png").convert_alpha()
@@ -68,43 +77,35 @@ def render_promotion(
     piece: Piece,
     pos_and_size: tuple[int, int, int, int],
     images: IMAGES_PAIR_TYPE,
-):
-    piece_type = (PieceType.ROOK, PieceType.QUEEN, PieceType.BISHOP, PieceType.KNIGHT)
-    piece_type_count = len(piece_type)
+) -> tuple[float, float]:
     left = pos_and_size[0]
     top = pos_and_size[1]
     rect_width = pos_and_size[2]
     rect_height = pos_and_size[3]
+    offset_x = (TILES_COUNT_X - PIECE_TYPE_COUNT) / 2
+    offset_y = (TILES_COUNT_Y - 1) / 2
     pygame.draw.rect(
         screen,
         (255, 0, 0),
         (
-            left + rect_width * (TILES_COUNT_X - piece_type_count) / 2,
-            top + rect_height * (TILES_COUNT_Y - 1) / 2,
-            piece_type_count * (rect_width),
+            left + rect_width * offset_x,
+            top + rect_height * offset_y,
+            PIECE_TYPE_COUNT * (rect_width),
             rect_height,
         ),
     )
     for i in range(4):
         screen.blit(
             pygame.transform.scale(
-                images[(piece.color, piece_type[i])],
+                images[(piece.color, PROMOTION_PIECE_TYPES[i])],
                 (
                     rect_width,
                     rect_height,
                 ),
             ),
             (
-                left + rect_width * ((TILES_COUNT_X - piece_type_count) / 2 + i),
-                top + rect_height * (TILES_COUNT_Y - 1) / 2,
+                left + rect_width * (offset_x + i),
+                top + rect_height * offset_y,
             ),
         )
-    # pygame.display.update()
-    # while True:
-    #     pos_x, pos_y = pygame.mouse.get_pos()
-    #     index_x = (pos_x - left + rect_width * 2.5) // rect_width
-    #     index_y = (pos_y - top + rect_height * 3.5) // rect_height
-    #     print(index_x, index_y)
-    #     if index_x not in range(0, 4) and index_y not in range(0, 4):
-    #         continue
-    #     break
+    return offset_x, offset_y

@@ -274,27 +274,6 @@ class Piece:
             raise Exception("How king dead")
         return self.is_coord_attacked(king.pos_x, king.pos_y)
 
-    def promote(self):
-        while True:
-            selected_piece = input(
-                "Type your promotion choice (ROOK, QUEEN, BISHOP, KNIGHT): "
-            ).upper()
-            match selected_piece:
-                case "ROOK":
-                    self.piece_type = PieceType.ROOK
-                    break
-                case "QUEEN":
-                    self.piece_type = PieceType.QUEEN
-                    break
-                case "BISHOP":
-                    self.piece_type = PieceType.BISHOP
-                    break
-                case "KNIGHT":
-                    self.piece_type = PieceType.KNIGHT
-                    break
-                case _:
-                    print("Error, please type your choice again")
-
 
 class PieceType(Enum):
     KING = auto()
