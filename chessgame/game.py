@@ -99,3 +99,11 @@ def get_coord_on_click(
     if not board.is_in_bound(index_x, index_y):
         return None
     return index_x, index_y
+
+
+def castle(king: Piece, rook: Piece):
+    if rook.pos_x > king.pos_x:
+        king.board.move_piece(king.pos_x, king.pos_y, king.pos_x + 2, king.pos_y)
+    elif rook.pos_x < king.pos_x:
+        king.board.move_piece(king.pos_x, king.pos_y, king.pos_x - 2, king.pos_y)
+    pass

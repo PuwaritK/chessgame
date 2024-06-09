@@ -27,6 +27,13 @@ def get_diagonals():
     )
 
 
+def king_castle_tiles():
+    return (
+        zip(range(1, TILES_COUNT_X), repeat(0)),  # east
+        zip(range(-1, -TILES_COUNT_X, -1), repeat(0)),  # west
+    )
+
+
 KNIGHT_OFFSETS = (
     (-2, -1),
     (-1, -2),
@@ -56,7 +63,6 @@ class Piece:
         self.has_moved = False
         self.enpassant: tuple[int, int] | None = None
         self.is_invis = False
-
         board.tiles[y][x] = self
 
     def available_moves(self) -> list[tuple[int, int]]:
@@ -64,6 +70,30 @@ class Piece:
         is_checked = self.is_king_attacked()
 
         if self.piece_type == PieceType.KING:
+            if not self.has_moved:  # castle
+                for direction in king_castle_tiles():
+                    for offset_x, offset_y in direction:
+                        x = self.pos_x + offset_x
+                        y = self.pos_y
+                        if not self.board.is_in_bound(x, y):
+                            break
+                        same_row = self.board.get_piece(x, y)
+                        if same_row is None:
+                            continue
+                        if (
+                            is_checked
+                            or (
+                                self.is_any_piece(x, y)
+                                and same_row.piece_type != PieceType.ROOK
+                            )
+                            or self.is_coord_attacked(x, y)
+                        ):
+                            break
+                        if (
+                            same_row.piece_type == PieceType.ROOK
+                            and not same_row.has_moved
+                        ):
+                            possible_tiles.append((x, y))
             for offset_x in range(-1, 2):
                 for offset_y in range(-1, 2):
                     if offset_x == 0 and offset_y == 0:

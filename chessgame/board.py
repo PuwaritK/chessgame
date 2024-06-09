@@ -17,11 +17,38 @@ class Board:
 
     def move_piece(self, x1: int, y1: int, x2: int, y2: int):
         moved_piece = self.get_piece(x1, y1)
+        target = self.tiles[y2][x2]
         if moved_piece is None:
             raise ValueError("you tried to move nothing")
+        if (
+            target is not None
+            and moved_piece.color == target.color
+            and moved_piece.piece_type == PieceType.KING
+            and target.piece_type == PieceType.ROOK
+        ):
+            if moved_piece.pos_x < target.pos_x:  # right rook
+                moved_piece.pos_x = x1 + 2
+                target.pos_x = x2 - 2
+                moved_piece.has_moved = True
+                target.has_moved = True
+                moved_piece.enpassant = None
+                target.enpassant = None
+                self.tiles[y1][x1] = None
+                self.tiles[y2][x1 + 2] = moved_piece
+                self.tiles[y2][x2 - 2] = target
+            elif moved_piece.pos_x > target.pos_x:  # left rook
+                moved_piece.pos_x = x1 - 2
+                target.pos_x = x2 + 3
+                moved_piece.has_moved = True
+                target.has_moved = True
+                moved_piece.enpassant = None
+                target.enpassant = None
+                self.tiles[y1][x1] = None
+                self.tiles[y2][x1 - 2] = moved_piece
+                self.tiles[y2][x2 + 3] = target
+            return
         moved_piece.pos_x = x2
         moved_piece.pos_y = y2
-        target = self.tiles[y2][x2]
         moved_piece.has_moved = True
         moved_piece.enpassant = None
         if moved_piece.piece_type == PieceType.PAWN and (
