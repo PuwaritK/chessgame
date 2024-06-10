@@ -21,6 +21,32 @@ class Board:
         if moved_piece is None:
             raise ValueError("you tried to move nothing")
         if (
+            moved_piece.piece_type == PieceType.PAWN
+            and moved_piece.enpassant is not None
+        ):
+            if (
+                moved_piece.enpassant == (x2, y2)
+                and moved_piece.color == PieceColor.WHITE
+            ):
+                moved_piece.pos_x = x2
+                moved_piece.pos_y = y2
+                moved_piece.has_moved = True
+                moved_piece.enpassant = None
+                self.tiles[y1][x1] = None
+                self.tiles[y2][x2] = moved_piece
+                self.tiles[y2 + 1][x2] = None
+            elif (
+                moved_piece.enpassant == (x2, y2)
+                and moved_piece.color == PieceColor.BLACK
+            ):
+                moved_piece.pos_x = x2
+                moved_piece.pos_y = y2
+                moved_piece.has_moved = True
+                moved_piece.enpassant = None
+                self.tiles[y1][x1] = None
+                self.tiles[y2][x2] = moved_piece
+                self.tiles[y2 - 1][x2] = None
+        if (
             target is not None
             and moved_piece.color == target.color
             and moved_piece.piece_type == PieceType.KING
@@ -58,6 +84,36 @@ class Board:
             self.promoted_piece = moved_piece
         self.tiles[y1][x1] = None
         self.tiles[y2][x2] = moved_piece
+        if self.is_in_bound(x2 - 1, y2):
+            target_left = self.get_piece(x2 - 1, y2)
+        else:
+            target_left = None
+        if self.is_in_bound(x2 + 1, y2):
+            target_right = self.get_piece(x2 + 1, y2)
+        else:
+            target_right = None
+        if (
+            target_left is not None
+            and target_left.piece_type == PieceType.PAWN
+            and moved_piece.piece_type == PieceType.PAWN
+            and target_left.color != moved_piece.color
+        ):
+            if abs(y2 - y1) == 2:
+                if moved_piece.color == PieceColor.WHITE:
+                    target_left.enpassant = x2, y2 + 1
+                elif moved_piece.color == PieceColor.BLACK:
+                    target_left.enpassant = x2, y2 - 1
+        if (
+            target_right is not None
+            and target_right.piece_type == PieceType.PAWN
+            and moved_piece.piece_type == PieceType.PAWN
+            and target_right.color != moved_piece.color
+        ):
+            if abs(y2 - y1) == 2:
+                if moved_piece.color == PieceColor.WHITE:
+                    target_right.enpassant = x2, y2 + 1
+                elif moved_piece.color == PieceColor.BLACK:
+                    target_right.enpassant = x2, y2 - 1
         if target is None:
             return
         if moved_piece.color == target.color:
