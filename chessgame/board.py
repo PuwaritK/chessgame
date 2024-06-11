@@ -6,12 +6,11 @@ class Board:
     tiles: list[list[Piece | None]]
 
     def __init__(self) -> None:
-        self.black_count = 16
-        self.white_count = 16
         self.tiles = []
         self.white_king: Piece | None = None
         self.black_king: Piece | None = None
         self.promoted_piece: Piece | None = None
+        self.enpassants: list[Piece] = []
         for _ in range(TILES_COUNT_Y):
             self.tiles.append([None] * TILES_COUNT_X)
 
@@ -20,116 +19,111 @@ class Board:
         target = self.tiles[y2][x2]
         if moved_piece is None:
             raise ValueError("you tried to move nothing")
-        if (
-            moved_piece.piece_type == PieceType.PAWN
-            and moved_piece.enpassant is not None
-        ):
-            if (
-                moved_piece.enpassant == (x2, y2)
-                and moved_piece.color == PieceColor.WHITE
-            ):
-                moved_piece.pos_x = x2
-                moved_piece.pos_y = y2
-                moved_piece.has_moved = True
-                moved_piece.enpassant = None
-                self.tiles[y1][x1] = None
-                self.tiles[y2][x2] = moved_piece
-                self.tiles[y2 + 1][x2] = None
-            elif (
-                moved_piece.enpassant == (x2, y2)
-                and moved_piece.color == PieceColor.BLACK
-            ):
-                moved_piece.pos_x = x2
-                moved_piece.pos_y = y2
-                moved_piece.has_moved = True
-                moved_piece.enpassant = None
-                self.tiles[y1][x1] = None
-                self.tiles[y2][x2] = moved_piece
-                self.tiles[y2 - 1][x2] = None
-        if (
-            target is not None
-            and moved_piece.color == target.color
-            and moved_piece.piece_type == PieceType.KING
-            and target.piece_type == PieceType.ROOK
-        ):
-            if moved_piece.pos_x < target.pos_x:  # right rook
-                moved_piece.pos_x = x1 + 2
-                target.pos_x = x2 - 2
-                moved_piece.has_moved = True
-                target.has_moved = True
-                moved_piece.enpassant = None
-                target.enpassant = None
-                self.tiles[y1][x1] = None
-                self.tiles[y2][x1 + 2] = moved_piece
-                self.tiles[y2][x2 - 2] = target
-            elif moved_piece.pos_x > target.pos_x:  # left rook
-                moved_piece.pos_x = x1 - 2
-                target.pos_x = x2 + 3
-                moved_piece.has_moved = True
-                target.has_moved = True
-                moved_piece.enpassant = None
-                target.enpassant = None
-                self.tiles[y1][x1] = None
-                self.tiles[y2][x1 - 2] = moved_piece
-                self.tiles[y2][x2 + 3] = target
+
+        if self._can_enpassant(moved_piece, x2, y2):
+            self._enpassant(moved_piece, x2, y2)
+        elif target is not None and self._can_castle(moved_piece, target):
+            self._castle(moved_piece, target, x1, y1, x2, y2)
             return
+
+        self._clear_enpassants()
+
         moved_piece.pos_x = x2
         moved_piece.pos_y = y2
         moved_piece.has_moved = True
-        moved_piece.enpassant = None
-        if moved_piece.piece_type == PieceType.PAWN and (
-            (y2 == 7 and moved_piece.color == PieceColor.BLACK)
-            or (y2 == 0 and moved_piece.color == PieceColor.WHITE)
-        ):
+
+        if self._can_promote(moved_piece, y2):
             self.promoted_piece = moved_piece
+
         self.tiles[y1][x1] = None
         self.tiles[y2][x2] = moved_piece
-        if self.is_in_bound(x2 - 1, y2):
-            target_left = self.get_piece(x2 - 1, y2)
-        else:
-            target_left = None
-        if self.is_in_bound(x2 + 1, y2):
-            target_right = self.get_piece(x2 + 1, y2)
-        else:
-            target_right = None
-        if (
-            target_left is not None
-            and target_left.piece_type == PieceType.PAWN
-            and moved_piece.piece_type == PieceType.PAWN
-            and target_left.color != moved_piece.color
-        ):
-            if abs(y2 - y1) == 2:
-                if moved_piece.color == PieceColor.WHITE:
-                    target_left.enpassant = x2, y2 + 1
-                elif moved_piece.color == PieceColor.BLACK:
-                    target_left.enpassant = x2, y2 - 1
-        if (
-            target_right is not None
-            and target_right.piece_type == PieceType.PAWN
-            and moved_piece.piece_type == PieceType.PAWN
-            and target_right.color != moved_piece.color
-        ):
-            if abs(y2 - y1) == 2:
-                if moved_piece.color == PieceColor.WHITE:
-                    target_right.enpassant = x2, y2 + 1
-                elif moved_piece.color == PieceColor.BLACK:
-                    target_right.enpassant = x2, y2 - 1
+        self._add_enpassant(moved_piece, y1, x2, y2)
+
         if target is None:
             return
         if moved_piece.color == target.color:
             raise Exception("you killed your own kind")
-        if target.color == PieceColor.WHITE:
-            self.white_count -= 1
-        elif target.color == PieceColor.BLACK:
-            self.black_count -= 1
 
     def get_piece(self, x: int, y: int) -> Piece | None:
         if x < 0 or y < 0:
             raise KeyError("you tried to get invalid piece")
         return self.tiles[y][x]
 
-    def is_in_bound(self, x: int, y: int):
+    def is_in_bound(self, x: int, y: int) -> bool:
         return x in range(0, TILES_COUNT_X) and y in range(0, TILES_COUNT_Y)
+
+    def _enpassant(self, moved_piece: Piece, x2: int, y2: int):
+        if moved_piece.color == PieceColor.WHITE:
+            self.tiles[y2 + 1][x2] = None
+        elif moved_piece.color == PieceColor.BLACK:
+            self.tiles[y2 - 1][x2] = None
+
+    def _add_enpassant(self, moved_piece: Piece, y1: int, x2: int, y2: int):
+        if not abs(y2 - y1) == 2:
+            return
+        if moved_piece.piece_type != PieceType.PAWN:
+            return
+
+        targets: list[Piece | None] = []
+        for offset_x in (-1, 1):
+            if self.is_in_bound(x2 + offset_x, y2):
+                targets.append(self.get_piece(x2 + offset_x, y2))
+
+        for target in targets:
+            if target is None:
+                continue
+            if target.piece_type != PieceType.PAWN:
+                continue
+            if target.color == moved_piece.color:
+                continue
+            if moved_piece.color == PieceColor.WHITE:
+                target.enpassant = x2, y2 + 1
+            elif moved_piece.color == PieceColor.BLACK:
+                target.enpassant = x2, y2 - 1
+            self.enpassants.append(target)
+
+    def _castle(
+        self, moved_piece: Piece, target: Piece, x1: int, y1: int, x2: int, y2: int
+    ):
+        if moved_piece.pos_x < target.pos_x:  # right rook
+            moved_piece.pos_x = x1 + 2
+            target.pos_x = x2 - 2
+        else:  # left rook
+            moved_piece.pos_x = x1 - 2
+            target.pos_x = x2 + 3
+
+        moved_piece.has_moved = True
+        target.has_moved = True
+        self.tiles[y1][x1] = None
+        self.tiles[y2][x2] = None
+        self.tiles[y2][moved_piece.pos_x] = moved_piece
+        self.tiles[y2][target.pos_x] = target
+        self._clear_enpassants()
+
+    def _clear_enpassants(self):
+        for piece in self.enpassants:
+            piece.enpassant = None
+        self.enpassants = []
+
+    def _can_enpassant(self, moved_piece: Piece, x2: int, y2: int) -> bool:
+        return (
+            moved_piece.piece_type == PieceType.PAWN
+            and moved_piece.enpassant is not None
+            and moved_piece.enpassant == (x2, y2)
+        )
+
+    def _can_castle(self, moved_piece: Piece, target: Piece) -> bool:
+        return (
+            moved_piece.color == target.color
+            and moved_piece.piece_type == PieceType.KING
+            and target.piece_type == PieceType.ROOK
+        )
+
+    def _can_promote(self, moved_piece: Piece, y2: int) -> bool:
+        return moved_piece.piece_type == PieceType.PAWN and (
+            (y2 == 7 and moved_piece.color == PieceColor.BLACK)
+            or (y2 == 0 and moved_piece.color == PieceColor.WHITE)
+        )
 
 
 def get_default_board() -> Board:

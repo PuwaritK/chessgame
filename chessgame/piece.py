@@ -70,7 +70,7 @@ class Piece:
         is_checked = self.is_king_attacked()
 
         if self.piece_type == PieceType.KING:
-            if not self.has_moved:  # castle
+            if not self.has_moved and not is_checked:  # castle
                 for direction in king_castle_tiles():
                     for offset_x, offset_y in direction:
                         x = self.pos_x + offset_x
@@ -81,13 +81,11 @@ class Piece:
                         if same_row is None:
                             continue
                         if (
-                            is_checked
-                            or (
-                                self.is_any_piece(x, y)
-                                and same_row.piece_type != PieceType.ROOK
-                            )
-                            or self.is_coord_attacked(x, y)
+                            self.is_any_piece(x, y)
+                            and same_row.piece_type != PieceType.ROOK
                         ):
+                            break
+                        if offset_x in range(-2, 2) and self.is_coord_attacked(x, y):
                             break
                         if (
                             same_row.piece_type == PieceType.ROOK
@@ -177,6 +175,7 @@ class Piece:
                     if self.is_any_piece(x, y):
                         break
                     possible_tiles.append((x, y))
+
         if not is_checked:
             return possible_tiles
         new_possible_tile: list[tuple[int, int]] = []
