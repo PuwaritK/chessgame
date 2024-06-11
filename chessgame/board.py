@@ -38,7 +38,6 @@ class Board:
         self.tiles[y1][x1] = None
         self.tiles[y2][x2] = moved_piece
         self._add_enpassant(moved_piece, y1, x2, y2)
-
         if target is None:
             return
         if moved_piece.color == target.color:
