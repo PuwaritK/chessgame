@@ -79,6 +79,9 @@ def run(screen: pygame.Surface):
                         turn = PieceColor.BLACK
                     elif turn == PieceColor.BLACK:
                         turn = PieceColor.WHITE
+                    if is_game_over(board, turn):
+                        get_winner(board, turn)
+                        pygame.quit()
                     continue
                 piece = board.get_piece(coord[0], coord[1])
                 if piece is None or piece.color != turn:
@@ -99,3 +102,26 @@ def get_coord_on_click(
     if not board.is_in_bound(index_x, index_y):
         return None
     return index_x, index_y
+
+
+def is_game_over(board: Board, turn: PieceColor) -> bool:
+    can_move = False
+    for piece in board.pieces_left:
+        if piece.color != turn:
+            continue
+        if piece.available_moves:
+            can_move = True
+    return can_move
+
+
+def get_winner(board: Board, turn: PieceColor) -> PieceColor | None:
+    if turn == PieceColor.WHITE:
+        if board.white_king is not None and board.white_king.is_king_attacked():
+            print("Black Won")
+        elif board.white_king is not None and not board.white_king.is_king_attacked():
+            print("FOOL! you drawed the game.")
+    elif turn == PieceColor.BLACK:
+        if board.black_king is not None and board.black_king.is_king_attacked():
+            print("White Won")
+        elif board.black_king is not None and not board.black_king.is_king_attacked():
+            print("FOOL! you drawed the game.")

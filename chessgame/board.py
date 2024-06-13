@@ -4,9 +4,11 @@ from .piece import Piece, PieceColor, PieceType, TILES_COUNT_X, TILES_COUNT_Y
 
 class Board:
     tiles: list[list[Piece | None]]
+    pieces_left: list[Piece]
 
     def __init__(self) -> None:
         self.tiles = []
+        self.pieces_left = []
         self.white_king: Piece | None = None
         self.black_king: Piece | None = None
         self.promoted_piece: Piece | None = None
@@ -127,36 +129,38 @@ class Board:
 
 def get_default_board() -> Board:
     board = Board()
-    Piece(PieceType.ROOK, PieceColor.BLACK, board, 0, 0)
-    Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 1, 0)
-    Piece(PieceType.BISHOP, PieceColor.BLACK, board, 2, 0)
-    Piece(PieceType.QUEEN, PieceColor.BLACK, board, 3, 0)
+    board.pieces_left.append(Piece(PieceType.ROOK, PieceColor.BLACK, board, 0, 0))
+    board.pieces_left.append(Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 1, 0))
+    board.pieces_left.append(Piece(PieceType.BISHOP, PieceColor.BLACK, board, 2, 0))
+    board.pieces_left.append(Piece(PieceType.QUEEN, PieceColor.BLACK, board, 3, 0))
     board.black_king = Piece(PieceType.KING, PieceColor.BLACK, board, 4, 0)
-    Piece(PieceType.BISHOP, PieceColor.BLACK, board, 5, 0)
-    Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 6, 0)
-    Piece(PieceType.ROOK, PieceColor.BLACK, board, 7, 0)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 0, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 1, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 2, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 3, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 4, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 5, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 6, 1)
-    Piece(PieceType.PAWN, PieceColor.BLACK, board, 7, 1)
-    Piece(PieceType.ROOK, PieceColor.WHITE, board, 0, 7)
-    Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 1, 7)
-    Piece(PieceType.BISHOP, PieceColor.WHITE, board, 2, 7)
-    Piece(PieceType.QUEEN, PieceColor.WHITE, board, 3, 7)
+    board.pieces_left.append(board.black_king)
+    board.pieces_left.append(Piece(PieceType.BISHOP, PieceColor.BLACK, board, 5, 0))
+    board.pieces_left.append(Piece(PieceType.KNIGHT, PieceColor.BLACK, board, 6, 0))
+    board.pieces_left.append(Piece(PieceType.ROOK, PieceColor.BLACK, board, 7, 0))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 0, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 1, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 2, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 3, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 4, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 5, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 6, 1))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.BLACK, board, 7, 1))
+    board.pieces_left.append(Piece(PieceType.ROOK, PieceColor.WHITE, board, 0, 7))
+    board.pieces_left.append(Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 1, 7))
+    board.pieces_left.append(Piece(PieceType.BISHOP, PieceColor.WHITE, board, 2, 7))
+    board.pieces_left.append(Piece(PieceType.QUEEN, PieceColor.WHITE, board, 3, 7))
     board.white_king = Piece(PieceType.KING, PieceColor.WHITE, board, 4, 7)
-    Piece(PieceType.BISHOP, PieceColor.WHITE, board, 5, 7)
-    Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 6, 7)
-    Piece(PieceType.ROOK, PieceColor.WHITE, board, 7, 7)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 0, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 1, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 2, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 3, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 4, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 5, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 6, 6)
-    Piece(PieceType.PAWN, PieceColor.WHITE, board, 7, 6)
+    board.pieces_left.append(board.white_king)
+    board.pieces_left.append(Piece(PieceType.BISHOP, PieceColor.WHITE, board, 5, 7))
+    board.pieces_left.append(Piece(PieceType.KNIGHT, PieceColor.WHITE, board, 6, 7))
+    board.pieces_left.append(Piece(PieceType.ROOK, PieceColor.WHITE, board, 7, 7))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 0, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 1, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 2, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 3, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 4, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 5, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 6, 6))
+    board.pieces_left.append(Piece(PieceType.PAWN, PieceColor.WHITE, board, 7, 6))
     return board
