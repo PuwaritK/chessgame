@@ -79,9 +79,10 @@ def run(screen: pygame.Surface):
                         turn = PieceColor.BLACK
                     elif turn == PieceColor.BLACK:
                         turn = PieceColor.WHITE
-                    if is_game_over(board, turn):
+                    if not can_continue(board, turn):
                         get_winner(board, turn)
                         pygame.quit()
+                        return
                     continue
                 piece = board.get_piece(coord[0], coord[1])
                 if piece is None or piece.color != turn:
@@ -104,14 +105,13 @@ def get_coord_on_click(
     return index_x, index_y
 
 
-def is_game_over(board: Board, turn: PieceColor) -> bool:
-    can_move = False
+def can_continue(board: Board, turn: PieceColor) -> bool:
     for piece in board.pieces_left:
         if piece.color != turn:
             continue
-        if piece.available_moves:
-            can_move = True
-    return can_move
+        if piece.available_moves() != []:
+            return True
+    return False
 
 
 def get_winner(board: Board, turn: PieceColor) -> PieceColor | None:
