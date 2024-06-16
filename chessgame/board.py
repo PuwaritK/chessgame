@@ -42,6 +42,7 @@ class Board:
         self._add_enpassant(moved_piece, y1, x2, y2)
         if target is None:
             return
+        self.pieces_left.remove(target)
         if moved_piece.color == target.color:
             raise Exception("you killed your own kind")
 
@@ -55,9 +56,13 @@ class Board:
 
     def _enpassant(self, moved_piece: Piece, x2: int, y2: int):
         if moved_piece.color == PieceColor.WHITE:
+            target = self.get_piece(x2, y2 + 1)
             self.tiles[y2 + 1][x2] = None
         elif moved_piece.color == PieceColor.BLACK:
+            target = self.get_piece(x2, y2 - 1)
             self.tiles[y2 - 1][x2] = None
+        assert target is not None
+        self.pieces_left.remove(target)
 
     def _add_enpassant(self, moved_piece: Piece, y1: int, x2: int, y2: int):
         if not abs(y2 - y1) == 2:

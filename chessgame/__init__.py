@@ -1,1 +1,1 @@
-from chessgame import background, display, game
+from chessgame import background, display, game, scene
