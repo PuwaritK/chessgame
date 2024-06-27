@@ -124,8 +124,6 @@ class Piece:
             self.board.tiles[self.pos_y][self.pos_x] = self
             return new_possible_tile
 
-        if not is_checked and self.is_pinned():
-            return []
         match self.piece_type:
             case PieceType.ROOK:
                 for direction in get_nsew():
@@ -176,6 +174,23 @@ class Piece:
                         break
                     possible_tiles.append((x, y))
 
+        if not is_checked and self.is_pinned():
+            self.is_invis = True
+            for x, y in possible_tiles:
+                checking_piece = self.board.get_piece(x, y)
+                if checking_piece is None:
+                    continue
+                if checking_piece.color != self.color:
+                    checking_piece.is_invis = True
+                    if self.is_king_attacked():
+                        checking_piece.is_invis = False
+                        continue
+                    else:
+                        checking_piece.is_invis = False
+                        self.is_invis = False
+                        return [(x, y)]
+            self.is_invis = False
+            return []
         if not is_checked:
             return possible_tiles
         new_possible_tile: list[tuple[int, int]] = []
@@ -247,7 +262,7 @@ class Piece:
             if not self.board.is_in_bound(x + offset_x, y + offset_y):
                 continue
             selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
-            if selected_piece is None:
+            if selected_piece is None or selected_piece.is_invis:
                 continue
             if (
                 selected_piece.piece_type == PieceType.KNIGHT
@@ -261,7 +276,7 @@ class Piece:
                 if not self.board.is_in_bound(x + offset_x, y + offset_y):
                     continue
                 selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
-                if selected_piece is None:
+                if selected_piece is None or selected_piece.is_invis:
                     continue
                 if (
                     selected_piece.piece_type == PieceType.KING
@@ -279,7 +294,7 @@ class Piece:
             if not self.board.is_in_bound(x + offset_x, y + offset_y):
                 continue
             selected_piece = self.board.get_piece(x + offset_x, y + offset_y)
-            if selected_piece is None:
+            if selected_piece is None or selected_piece.is_invis:
                 continue
             if (
                 selected_piece.piece_type == PieceType.PAWN
