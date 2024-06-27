@@ -180,7 +180,9 @@ class Piece:
                 checking_piece = self.board.get_piece(x, y)
                 if checking_piece is None:
                     continue
-                if checking_piece.color != self.color:
+                if checking_piece.color == self.color:
+                    continue
+                elif checking_piece.color != self.color:
                     checking_piece.is_invis = True
                     if self.is_king_attacked():
                         checking_piece.is_invis = False
@@ -188,7 +190,34 @@ class Piece:
                     else:
                         checking_piece.is_invis = False
                         self.is_invis = False
-                        return [(x, y)]
+                        tiles = []
+                        tiles_x = []
+                        tiles_y = []
+                        if self.pos_x > checking_piece.pos_x:
+                            for x in range(
+                                self.pos_x - 1, checking_piece.pos_x - 1, -1
+                            ):
+                                tiles_x.append(x)
+                        elif self.pos_x < checking_piece.pos_x:
+                            for x in range(self.pos_x + 1, checking_piece.pos_x + 1, 1):
+                                tiles_x.append(x)
+                        else:
+                            tiles_x.append(x)
+
+                        if self.pos_y > checking_piece.pos_y:
+                            for y in range(
+                                self.pos_y - 1, checking_piece.pos_y - 1, -1
+                            ):
+                                tiles_y.append(y)
+                        elif self.pos_y < checking_piece.pos_y:
+                            for y in range(self.pos_y + 1, checking_piece.pos_y + 1, 1):
+                                tiles_y.append(y)
+                        else:
+                            tiles_y.append(y)
+                        for x in tiles_x:
+                            for y in tiles_y:
+                                tiles.append((x, y))
+                        return [(x, y) for x, y in tiles]
             self.is_invis = False
             return []
         if not is_checked:
