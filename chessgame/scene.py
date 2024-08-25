@@ -24,7 +24,7 @@ MENU_FONT = 70
 
 class Scene(ABC):
     @abstractmethod
-    def on_click(self) -> "Scene | None":
+    def on_click(self, start_time) -> "Scene | None":
         pass
 
     @abstractmethod
@@ -40,7 +40,7 @@ class GameScene(Scene):
         self.available_moves: list[tuple[int, int]] | None = None
         self.turn = PieceColor.WHITE
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, start_time) -> "Scene | None":
         if self.board.promoted_piece is not None:
             pos_x, pos_y = pygame.mouse.get_pos()
             index_x = (
@@ -108,7 +108,7 @@ class MenuScene(Scene):
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, start_time) -> "Scene | None":
         pos_x, pos_y = pygame.mouse.get_pos()
         if self.play_game_button_rect.collidepoint(pos_x, pos_y):
             return GameScene()
@@ -141,7 +141,7 @@ class MenuScene(Scene):
 
 class SettingScene(Scene):
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, start_time) -> "Scene | None":
         pass
 
     def on_loop(self, screen: pygame.Surface):
@@ -154,7 +154,7 @@ class GameOverScene(Scene):
         self.winner_font = pygame.font.SysFont(GAME_FONT, WINNER_SCENE_TEXT_SIZE)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, start_time) -> "Scene | None":
         pos_x, pos_y = pygame.mouse.get_pos()
         if self.main_menu_button_rect.collidepoint(pos_x, pos_y):
             return MenuScene()
@@ -187,7 +187,11 @@ class GameOverScene(Scene):
 
 
 class Pause(Scene):
-    pass
+    def on_click(self, start_time) -> "Scene | None":
+        pass
+
+    def on_loop(self, screen: pygame.Surface):
+        pass
 
 
 def get_coord_on_click(
