@@ -10,8 +10,7 @@ from .display import (
     PROMOTION_PIECE_TYPES,
 )
 from .piece import Piece, PieceColor
-from .scene import Pause, Scene, MenuScene, GameScene
-from time import perf_counter
+from .scene import Scene, MenuScene, GameScene
 
 
 MIN_WIDTH = 640
@@ -36,15 +35,8 @@ def run(screen: pygame.Surface):
                     height = MIN_HEIGHT
                 screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                start_time = perf_counter()
-                event_check = scene.on_click(start_time)
+                event_check = scene.on_click()
                 if event_check is not None:
                     scene = event_check
-
-            elif event.type == pygame.KEYDOWN:
-                if scene is not None and scene is GameScene:
-                    if event.key in (pygame.K_ESCAPE, pygame.K_SPACE, pygame.K_RETURN):
-                        scene = Pause()
-
         pygame.display.update()
         clock.tick(FPS)
