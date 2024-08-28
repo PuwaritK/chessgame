@@ -20,15 +20,16 @@ GAME_FONT = "Sans Serif"
 BUTTON_TEXT_SIZE = 50
 WINNER_SCENE_TEXT_SIZE = 150
 MENU_FONT = 70
+TIME_CONTROL = (5, 0)
 
 
 class Scene(ABC):
     @abstractmethod
-    def on_click(self) -> "Scene | None":
+    def on_click(self, delta_time: float) -> "Scene | None":
         pass
 
     @abstractmethod
-    def on_loop(self, screen: pygame.Surface):
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
         pass
 
 
@@ -39,8 +40,10 @@ class GameScene(Scene):
         self.piece: Piece | None = None
         self.available_moves: list[tuple[int, int]] | None = None
         self.turn = PieceColor.WHITE
+        self.white_time = 0
+        self.black_time = 0
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, delta_time: float) -> "Scene | None":
         if self.board.promoted_piece is not None:
             pos_x, pos_y = pygame.mouse.get_pos()
             index_x = (
@@ -88,7 +91,7 @@ class GameScene(Scene):
             return
         self.available_moves = self.piece.available_moves()
 
-    def on_loop(self, screen: pygame.Surface):
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
         self.pos_and_size = background.draw_checkers(screen, self.available_moves)
         render_pieces(screen, self.board.tiles, self.pos_and_size, self.images)
@@ -108,14 +111,14 @@ class MenuScene(Scene):
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, delta_time: float) -> "Scene | None":
         pos_x, pos_y = pygame.mouse.get_pos()
         if self.play_game_button_rect.collidepoint(pos_x, pos_y):
             return GameScene()
         elif self.settings_button_rect.collidepoint(pos_x, pos_y):
             return SettingScene()
 
-    def on_loop(self, screen: pygame.Surface):
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
         menu_title = self.menu_font.render("Goofy AHH Chessgame", True, (0, 0, 0))
         self.menu_text_rect = menu_title.get_rect(
@@ -141,10 +144,10 @@ class MenuScene(Scene):
 
 class SettingScene(Scene):
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, delta_time: float) -> "Scene | None":
         pass
 
-    def on_loop(self, screen: pygame.Surface):
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
         pass
 
 
@@ -154,12 +157,12 @@ class GameOverScene(Scene):
         self.winner_font = pygame.font.SysFont(GAME_FONT, WINNER_SCENE_TEXT_SIZE)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
 
-    def on_click(self) -> "Scene | None":
+    def on_click(self, delta_time: float) -> "Scene | None":
         pos_x, pos_y = pygame.mouse.get_pos()
         if self.main_menu_button_rect.collidepoint(pos_x, pos_y):
             return MenuScene()
 
-    def on_loop(self, screen: pygame.Surface):
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
         main_menu_button = self.button_font.render("To Main Menu", True, (0, 0, 0))
         self.main_menu_button_rect = main_menu_button.get_rect(
