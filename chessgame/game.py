@@ -24,7 +24,10 @@ def run(screen: pygame.Surface):
     start_time = perf_counter()
     delta_time = 0
     while True:
-        scene.on_loop(screen,delta_time)
+        event_check = scene.on_loop(screen, delta_time)
+        if event_check is not None:
+            scene = event_check
+            continue
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -45,4 +48,3 @@ def run(screen: pygame.Surface):
         time_now = perf_counter()
         delta_time = time_now - start_time
         start_time = time_now
-        

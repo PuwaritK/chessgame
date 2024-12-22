@@ -20,6 +20,7 @@ GAME_FONT = "Sans Serif"
 BUTTON_TEXT_SIZE = 50
 WINNER_SCENE_TEXT_SIZE = 150
 MENU_FONT = 70
+TEXT_FONT = 22
 TIME_CONTROL = [15, 10]  # 15 minutes | 10 seconds increment
 
 
@@ -40,8 +41,10 @@ class GameScene(Scene):
         self.piece: Piece | None = None
         self.available_moves: list[tuple[int, int]] | None = None
         self.turn = PieceColor.WHITE
-        self.white_time = 0
-        self.black_time = 0
+        self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+        self.white_time = 60 * TIME_CONTROL[0]
+        self.black_time = 60 * TIME_CONTROL[0]
+        self.game_time = 0
 
     def on_click(self, delta_time: float) -> "Scene | None":
         if self.board.promoted_piece is not None:
@@ -77,10 +80,10 @@ class GameScene(Scene):
             self.available_moves = None
             self.piece = None
             if self.turn == PieceColor.WHITE:
-                self.white_time -= TIME_CONTROL[1]
+                self.white_time += TIME_CONTROL[1]
                 self.turn = PieceColor.BLACK
             elif self.turn == PieceColor.BLACK:
-                self.black_time -= TIME_CONTROL[1]
+                self.black_time += TIME_CONTROL[1]
                 self.turn = PieceColor.WHITE
             if not can_continue(self.board, self.turn):
                 winner = get_winner(self.board, self.turn)
@@ -95,10 +98,42 @@ class GameScene(Scene):
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
-        if self.white_time > TIME_CONTROL[0] * 60:
+        if self.white_time < 0:
             return GameOverScene(PieceColor.BLACK)
-        if self.black_time > TIME_CONTROL[0] * 60:
+        if self.black_time < 0:
             return GameOverScene(PieceColor.WHITE)
+
+        game_time = self.text_font.render(
+            f"Game Time: {self.game_time//60} minutes {self.game_time:.2f} seconds",
+            True,
+            (0, 0, 0),
+        )
+        self.game_time_rect = game_time.get_rect(
+            center=(screen.get_width() * 4 / 32, screen.get_height() * 1 / 16)
+        )
+
+        white_time = self.text_font.render(
+            f"White Time: {self.white_time:.2f} seconds",
+            True,
+            (0, 0, 0),
+        )
+        self.white_time_rect = white_time.get_rect(
+            center=(screen.get_width() * 3 / 32, screen.get_height() * 2 / 16)
+        )
+
+        black_time = self.text_font.render(
+            f"Black Time: {self.black_time:.2f} seconds",
+            True,
+            (0, 0, 0),
+        )
+        self.black_time_rect = black_time.get_rect(
+            center=(screen.get_width() * 3 / 32, screen.get_height() * 3 / 16)
+        )
+
+        screen.blit(game_time, self.game_time_rect)
+        screen.blit(white_time, self.white_time_rect)
+        screen.blit(black_time, self.black_time_rect)
+
         self.pos_and_size = background.draw_checkers(screen, self.available_moves)
         render_pieces(screen, self.board.tiles, self.pos_and_size, self.images)
         if self.board.promoted_piece is not None:
@@ -111,9 +146,10 @@ class GameScene(Scene):
                 screen, self.board.promoted_piece, self.pos_and_size, self.images
             )
         if self.turn == PieceColor.WHITE:
-            self.white_time += delta_time
+            self.white_time -= delta_time
         elif self.turn == PieceColor.BLACK:
-            self.black_time += delta_time
+            self.black_time -= delta_time
+        self.game_time += delta_time
 
 
 class MenuScene(Scene):
