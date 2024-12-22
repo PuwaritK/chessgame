@@ -10,7 +10,7 @@ from .display import (
     PROMOTION_PIECE_TYPES,
 )
 from .piece import Piece, PieceColor
-from .scene import Scene, MenuScene, GameScene
+from .scene import Scene, MenuScene, GameScene, Pause
 from time import perf_counter
 
 MIN_WIDTH = 640
@@ -43,6 +43,11 @@ def run(screen: pygame.Surface):
                 event_check = scene.on_click(delta_time)
                 if event_check is not None:
                     scene = event_check
+            # TODO: fix pressing escape not changing scene
+            elif event.type == pygame.K_ESCAPE:
+                print("escape pressed")
+                if type(scene) == GameScene:
+                    scene = Pause()
         pygame.display.update()
         clock.tick(FPS)
         time_now = perf_counter()
