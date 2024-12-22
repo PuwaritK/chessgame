@@ -174,12 +174,14 @@ class SettingScene(Scene):
             if self.minute_up_button_rect.collidepoint(pos_x, pos_y):
                 TIME_CONTROL[0] += 1
             if self.minute_down_button_rect.collidepoint(pos_x, pos_y):
-                TIME_CONTROL[0] -= 1
+                if TIME_CONTROL[0] > 1:
+                    TIME_CONTROL[0] -= 1
 
             if self.second_up_button_rect.collidepoint(pos_x, pos_y):
                 TIME_CONTROL[1] += 1
             if self.second_down_button_rect.collidepoint(pos_x, pos_y):
-                TIME_CONTROL[1] -= 1
+                if TIME_CONTROL[1] > 0:
+                    TIME_CONTROL[1] -= 1
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
