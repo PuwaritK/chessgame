@@ -320,20 +320,31 @@ class GameOverScene(Scene):
 
 
 class Pause(Scene):
-    def __init__(self) -> None:
+    def __init__(self, scene: GameScene) -> None:
+        # TODO: implement information storing on pause
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
+        self.board = scene.board
+        # self.images = scene.images
+        # self.piece: Piece | None = None
+        # self.available_moves: list[tuple[int, int]] | None = None
+        # self.turn = PieceColor.WHITE
+        # self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+        # self.white_time = 60 * TIME_CONTROL[0]
+        # self.black_time = 60 * TIME_CONTROL[0]
+        # self.game_time = 0
 
     def on_click(self, delta_time: float) -> Scene | None:
         return super().on_click(delta_time)
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
-        time_control_text = self.menu_font.render(
-            f"{TIME_CONTROL[0]} | {TIME_CONTROL[1]}", True, (0, 0, 0)
-        )
-        time_control_text_rect = time_control_text.get_rect(
-            center=(screen.get_width() / 2, screen.get_height() / 2)
-        )
-        screen.blit(time_control_text, time_control_text_rect)
+        screen.fill(BACKGROUND_COLOR)
+        # time_control_text = self.menu_font.render(
+        #     f"{TIME_CONTROL[0]} | {TIME_CONTROL[1]}", True, (0, 0, 0)
+        # )
+        # time_control_text_rect = time_control_text.get_rect(
+        #     center=(screen.get_width() / 2, screen.get_height() / 2)
+        # )
+        # screen.blit(time_control_text, time_control_text_rect)
 
 
 def get_coord_on_click(
