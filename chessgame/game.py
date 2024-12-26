@@ -28,6 +28,7 @@ def run(screen: pygame.Surface):
         if event_check is not None:
             scene = event_check
             continue
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -43,11 +44,11 @@ def run(screen: pygame.Surface):
                 event_check = scene.on_click(delta_time)
                 if event_check is not None:
                     scene = event_check
-            # TODO: fix pressing escape not changing scene
-            elif event.type == pygame.K_ESCAPE:
-                print("escape pressed")
-                if type(scene) == GameScene:
-                    scene = Pause()
+
+            elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    if type(scene) == GameScene:
+                        scene = Pause()
         pygame.display.update()
         clock.tick(FPS)
         time_now = perf_counter()
