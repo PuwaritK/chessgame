@@ -332,8 +332,8 @@ class GameOverScene(Scene):
 
 class Pause(Scene):
     def __init__(self, scene: GameScene) -> None:
-        # TODO: implement information storing on pause
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
+        self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
         self.board = scene.board
         self.images = scene.images
         self.piece: Piece | None = scene.piece
@@ -345,17 +345,84 @@ class Pause(Scene):
         self.game_time = scene.game_time
 
     def on_click(self, delta_time: float) -> Scene | None:
-        return super().on_click(delta_time)
+        pos_x, pos_y = pygame.mouse.get_pos()
+
+        if self.return_button_rect.collidepoint(pos_x, pos_y):
+            return GameScene(self)
+        if self.save_button_rect.collidepoint(pos_x, pos_y):
+            return Save(self)
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
-        # time_control_text = self.menu_font.render(
-        #     f"{TIME_CONTROL[0]} | {TIME_CONTROL[1]}", True, (0, 0, 0)
-        # )
-        # time_control_text_rect = time_control_text.get_rect(
-        #     center=(screen.get_width() / 2, screen.get_height() / 2)
-        # )
-        # screen.blit(time_control_text, time_control_text_rect)
+        title = self.menu_font.render("Game Paused", True, (0, 0, 0))
+        title_rect = title.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() / 4)
+        )
+        screen.blit(title, title_rect)
+
+        return_button = self.button_font.render("Return To Game", True, (0, 0, 0))
+        self.return_button_rect = return_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() / 2)
+        )
+        screen.blit(return_button, self.return_button_rect)
+
+        save_button = self.button_font.render("Save Game", True, (0, 0, 0))
+        self.save_button_rect = save_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+        )
+        screen.blit(save_button, self.save_button_rect)
+
+
+class Save(Scene):
+    def __init__(self, scene: Pause) -> None:
+        self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
+        self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
+        self.save_name = ""
+        self.board = scene.board
+        self.images = scene.images
+        self.piece: Piece | None = scene.piece
+        self.available_moves: list[tuple[int, int]] | None = scene.available_moves
+        self.turn = scene.turn
+        self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+        self.white_time = scene.white_time
+        self.black_time = scene.black_time
+        self.game_time = scene.game_time
+        self.save_name_clicked = False
+
+    def on_click(self, delta_time: float) -> Scene | None:
+        pos_x, pos_y = pygame.mouse.get_pos()
+
+        if (
+            self.save_name_button_rect.collidepoint(pos_x, pos_y)
+            and not self.save_name_clicked
+        ):
+            self.save_name_clicked = True
+            pygame.key.start_text_input()
+        elif (
+            self.save_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.save_name_clicked
+        ) or (
+            not self.save_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.save_name_clicked
+        ):
+            self.save_name_clicked = False
+            pygame.key.stop_text_input()
+
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
+        screen.fill(BACKGROUND_COLOR)
+        save_name_button = self.button_font.render(
+            f"Save Name: {self.save_name}", True, (0, 0, 0)
+        )
+        self.save_name_button_rect = save_name_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() / 2)
+        )
+        screen.blit(save_name_button, self.save_name_button_rect)
+
+        save_button = self.button_font.render("Save", True, (0, 0, 0))
+        self.save_button_rect = save_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+        )
+        screen.blit(save_button, self.save_button_rect)
 
 
 def get_coord_on_click(
