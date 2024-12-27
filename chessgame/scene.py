@@ -35,16 +35,27 @@ class Scene(ABC):
 
 
 class GameScene(Scene):
-    def __init__(self) -> None:
-        self.board = get_default_board()
-        self.images = get_image_dict()
-        self.piece: Piece | None = None
-        self.available_moves: list[tuple[int, int]] | None = None
-        self.turn = PieceColor.WHITE
-        self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
-        self.white_time = 60 * TIME_CONTROL[0]
-        self.black_time = 60 * TIME_CONTROL[0]
-        self.game_time = 0
+    def __init__(self, scene: "Pause | None" = None) -> None:
+        if scene is not None:
+            self.board = scene.board
+            self.images = scene.images
+            self.piece: Piece | None = scene.piece
+            self.available_moves: list[tuple[int, int]] | None = scene.available_moves
+            self.turn = scene.turn
+            self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+            self.white_time = scene.white_time
+            self.black_time = scene.black_time
+            self.game_time = scene.game_time
+        else:
+            self.board = get_default_board()
+            self.images = get_image_dict()
+            self.piece: Piece | None = None
+            self.available_moves: list[tuple[int, int]] | None = None
+            self.turn = PieceColor.WHITE
+            self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+            self.white_time = 60 * TIME_CONTROL[0]
+            self.black_time = 60 * TIME_CONTROL[0]
+            self.game_time = 0
 
     def on_click(self, delta_time: float) -> "Scene | None":
         if self.board.promoted_piece is not None:
@@ -324,14 +335,14 @@ class Pause(Scene):
         # TODO: implement information storing on pause
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.board = scene.board
-        # self.images = scene.images
-        # self.piece: Piece | None = None
-        # self.available_moves: list[tuple[int, int]] | None = None
-        # self.turn = PieceColor.WHITE
-        # self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
-        # self.white_time = 60 * TIME_CONTROL[0]
-        # self.black_time = 60 * TIME_CONTROL[0]
-        # self.game_time = 0
+        self.images = scene.images
+        self.piece: Piece | None = scene.piece
+        self.available_moves: list[tuple[int, int]] | None = scene.available_moves
+        self.turn = scene.turn
+        self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+        self.white_time = scene.white_time
+        self.black_time = scene.black_time
+        self.game_time = scene.game_time
 
     def on_click(self, delta_time: float) -> Scene | None:
         return super().on_click(delta_time)

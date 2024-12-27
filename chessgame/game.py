@@ -45,10 +45,12 @@ def run(screen: pygame.Surface):
                 if event_check is not None:
                     scene = event_check
 
-            elif event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if type(scene) == GameScene:
                         scene = Pause(scene)
+                    elif type(scene) == Pause:
+                        scene = GameScene(scene)
         pygame.display.update()
         clock.tick(FPS)
         time_now = perf_counter()
