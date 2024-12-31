@@ -407,6 +407,31 @@ class Save(Scene):
         ):
             self.save_name_clicked = False
             pygame.key.stop_text_input()
+        elif self.save_button_rect.collidepoint(pos_x, pos_y):
+            with open(f".\\saves\\{self.save_name}.txt", "w") as f:
+                f.write("Start pieces\n")
+                for row in self.board.tiles:
+                    for tiles in row:
+                        if tiles is None:
+                            f.write("None\n")
+                        else:
+                            f.write(f"{tiles.color} ")
+                            f.write(f"{tiles.piece_type} ")
+                            f.write(f"{tiles.enpassant} ")
+                            f.write(f"{tiles.has_moved} ")
+                            f.write(f"{tiles.is_invis} ")
+                            f.write(f"{tiles.pos_x} ")
+                            f.write(f"{tiles.pos_y}\n")
+                f.write("End pieces\n")
+                f.write(f"{TIME_CONTROL}\n")
+                f.write(f"{self.game_time}\n")
+                f.write(f"{self.white_time}\n")
+                f.write(f"{self.black_time}\n")
+                f.write(f"{self.turn}\n")
+                if self.piece is not None:
+                    f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
+                else:
+                    f.write(f"{None}")
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
