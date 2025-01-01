@@ -174,26 +174,38 @@ class MenuScene(Scene):
             return GameScene()
         elif self.settings_button_rect.collidepoint(pos_x, pos_y):
             return SettingScene()
+        elif self.load_game_button_rect.collidepoint(pos_x, pos_y):
+            return Load()
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
         menu_title = self.menu_font.render("Goofy AHH Chessgame", True, (0, 0, 0))
+
         self.menu_text_rect = menu_title.get_rect(
             center=(screen.get_width() / 2, screen.get_height() / 8)
         )
         screen.blit(menu_title, self.menu_text_rect)
 
-        play_game_button = self.button_font.render("Play", True, (0, 0, 0))
+        play_game_button = self.button_font.render("New Game", True, (0, 0, 0))
         self.play_game_button_rect = play_game_button.get_rect(
             center=(screen.get_width() / 2, screen.get_height() / 2)
         )
         screen.blit(play_game_button, self.play_game_button_rect)
 
+        load_game_button = self.button_font.render("Load Game", True, (0, 0, 0))
+        self.load_game_button_rect = load_game_button.get_rect(
+            center=(
+                screen.get_width() / 2,
+                screen.get_height() / 2 + screen.get_height() / 8,
+            )
+        )
+        screen.blit(load_game_button, self.load_game_button_rect)
+
         settings_button = self.button_font.render("Settings", True, (0, 0, 0))
         self.settings_button_rect = settings_button.get_rect(
             center=(
                 screen.get_width() / 2,
-                screen.get_height() / 2 + screen.get_height() / 8,
+                screen.get_height() / 2 + screen.get_height() / 4,
             )
         )
         screen.blit(settings_button, self.settings_button_rect)
@@ -408,6 +420,8 @@ class Save(Scene):
             self.save_name_clicked = False
             pygame.key.stop_text_input()
         elif self.save_button_rect.collidepoint(pos_x, pos_y):
+            self.save_name_clicked = False
+            pygame.key.stop_text_input()
             with open(f".\\saves\\{self.save_name}.txt", "w") as f:
                 f.write("Start pieces\n")
                 for row in self.board.tiles:
@@ -448,6 +462,17 @@ class Save(Scene):
             center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
         )
         screen.blit(save_button, self.save_button_rect)
+
+
+class Load(Scene):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def on_click(self, delta_time: float) -> Scene | None:
+        return super().on_click(delta_time)
+
+    def on_loop(self, screen: pygame.Surface, delta_time: float):
+        return super().on_loop(screen, delta_time)
 
 
 def get_coord_on_click(
