@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 import pygame
-
+import json
 from abc import ABC, abstractmethod
 
-from chessgame import background
+from chessgame import background, piece
 from chessgame.board import Board, get_default_board
 from chessgame.display import (
     PIECE_TYPE_COUNT,
@@ -35,18 +35,8 @@ class Scene(ABC):
 
 
 class GameScene(Scene):
-    def __init__(self, scene: "Pause | None" = None) -> None:
-        if scene is not None:
-            self.board = scene.board
-            self.images = scene.images
-            self.piece: Piece | None = scene.piece
-            self.available_moves: list[tuple[int, int]] | None = scene.available_moves
-            self.turn = scene.turn
-            self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
-            self.white_time = scene.white_time
-            self.black_time = scene.black_time
-            self.game_time = scene.game_time
-        else:
+    def __init__(self, scene: Scene | None = None) -> None:
+        if scene is None:
             self.board = get_default_board()
             self.images = get_image_dict()
             self.piece: Piece | None = None
@@ -56,6 +46,33 @@ class GameScene(Scene):
             self.white_time = 60 * TIME_CONTROL[0]
             self.black_time = 60 * TIME_CONTROL[0]
             self.game_time = 0
+
+        elif isinstance(scene, Pause):
+            self.board = scene.board
+            self.images = scene.images
+            self.piece: Piece | None = scene.piece
+            self.available_moves: list[tuple[int, int]] | None = scene.available_moves
+            self.turn = scene.turn
+            self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+            self.white_time = scene.white_time
+            self.black_time = scene.black_time
+            self.game_time = scene.game_time
+
+        elif isinstance(scene, Load):
+            self.board = scene.board
+            self.images = get_image_dict()
+            self.piece: Piece | None = scene.piece
+            if self.piece is None:
+                self.available_moves = None
+            else:
+                self.available_moves: list[tuple[int, int]] | None = (
+                    self.piece.available_moves()
+                )
+            self.turn = scene.turn
+            self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+            self.white_time = scene.white_time
+            self.black_time = scene.black_time
+            self.game_time = scene.game_time
 
     def on_click(self, delta_time: float) -> "Scene | None":
         if self.board.promoted_piece is not None:
@@ -90,6 +107,9 @@ class GameScene(Scene):
             )
             self.available_moves = None
             self.piece = None
+            assert self.white_time is not None
+            assert self.black_time is not None
+            assert self.turn is not None
             if self.turn == PieceColor.WHITE:
                 self.white_time += TIME_CONTROL[1]
                 self.turn = PieceColor.BLACK
@@ -109,6 +129,9 @@ class GameScene(Scene):
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
+        assert self.white_time is not None
+        assert self.black_time is not None
+        assert self.game_time is not None
         if self.white_time < 0:
             return GameOverScene(PieceColor.BLACK)
         if self.black_time < 0:
@@ -423,7 +446,6 @@ class Save(Scene):
             self.save_name_clicked = False
             pygame.key.stop_text_input()
             with open(f".\\saves\\{self.save_name}.txt", "w") as f:
-                f.write("Start pieces\n")
                 for row in self.board.tiles:
                     for tiles in row:
                         if tiles is None:
@@ -436,7 +458,6 @@ class Save(Scene):
                             f.write(f"{tiles.is_invis} ")
                             f.write(f"{tiles.pos_x} ")
                             f.write(f"{tiles.pos_y}\n")
-                f.write("End pieces\n")
                 f.write(f"{TIME_CONTROL}\n")
                 f.write(f"{self.game_time}\n")
                 f.write(f"{self.white_time}\n")
@@ -466,13 +487,120 @@ class Save(Scene):
 
 class Load(Scene):
     def __init__(self) -> None:
-        super().__init__()
+        self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
+        self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
+        self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
+        self.load_name = ""
+        self.load_name_clicked = False
+        self.load_error = False
+        self.board = get_default_board()
+        self.piece: Piece | None = None
+        self.turn = None
+        self.white_time: float | None = None
+        self.black_time: float | None = None
+        self.game_time: float | None = None
 
     def on_click(self, delta_time: float) -> Scene | None:
-        return super().on_click(delta_time)
+        pos_x, pos_y = pygame.mouse.get_pos()
+
+        if (
+            self.load_name_button_rect.collidepoint(pos_x, pos_y)
+            and not self.load_name_clicked
+        ):
+            self.load_name_clicked = True
+            pygame.key.start_text_input()
+        elif (
+            self.load_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.load_name_clicked
+        ) or (
+            not self.load_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.load_name_clicked
+        ):
+            self.load_name_clicked = False
+            pygame.key.stop_text_input()
+        elif self.load_button_rect.collidepoint(pos_x, pos_y):
+            self.load_name_clicked = False
+            self.load_error = False
+            pygame.key.stop_text_input()
+            try:
+                with open(f".\\saves\\{self.load_name}.txt", "r") as f:
+                    linecount = 1
+                    for line in f.readlines():
+                        if linecount > 64:
+                            pass
+                        if line != "None":
+                            data = line.split(" ")
+                            curr_piece = self.board.tiles[linecount // 9][
+                                linecount % 8
+                            ] = Piece(
+                                piece.PieceType(data[1]),
+                                piece.PieceColor(data[0]),
+                                self.board,
+                                int(data[5]),
+                                int(data[6]),
+                            )
+                            if data[2] != "None":
+                                curr_piece.enpassant = (
+                                    int(data[2][1]),
+                                    int(data[2][3]),
+                                )
+                            else:
+                                curr_piece.enpassant = None
+                            curr_piece.has_moved = bool(data[3])
+                            curr_piece.is_invis = bool(data[4])
+                            linecount += 1
+                        else:
+                            self.board.tiles[linecount // 9][linecount % 8] = None
+                            linecount += 1
+
+                        #                 f.write(f"{tiles.color} ")
+                        #                 f.write(f"{tiles.piece_type} ")
+                        #                 f.write(f"{tiles.enpassant} ")
+                        #                 f.write(f"{tiles.has_moved} ")
+                        #                 f.write(f"{tiles.is_invis} ")
+                        #                 f.write(f"{tiles.pos_x} ")
+                        #                 f.write(f"{tiles.pos_y}\n")
+                        #     f.write("End pieces\n")
+                        #     f.write(f"{TIME_CONTROL}\n")
+                        #     f.write(f"{self.game_time}\n")
+                        #     f.write(f"{self.white_time}\n")
+                        #     f.write(f"{self.black_time}\n")
+                        #     f.write(f"{self.turn}\n")
+                        # if self.piece is not None:
+                        #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
+                        # else:
+                        #     f.write(f"{None}")
+                return GameScene(self)
+            except OSError:
+                self.load_error = True
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
-        return super().on_loop(screen, delta_time)
+        screen.fill(BACKGROUND_COLOR)
+        load_name_button = self.button_font.render(
+            f"Load Save Name: {self.load_name}", True, (0, 0, 0)
+        )
+        self.load_name_button_rect = load_name_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() / 2)
+        )
+        screen.blit(load_name_button, self.load_name_button_rect)
+
+        load_button = self.button_font.render("Load", True, (0, 0, 0))
+        self.load_button_rect = load_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+        )
+        screen.blit(load_button, self.load_button_rect)
+
+        if self.load_error:
+            error_text = self.menu_font.render(
+                "Game name does not exists!", True, (0, 0, 0)
+            )
+            error_text_rect = error_text.get_rect(
+                center=(
+                    screen.get_width() / 2,
+                    screen.get_height() - self.menu_font.get_height() * 2,
+                )
+            )
+            screen.blit(error_text, error_text_rect)
 
 
 def get_coord_on_click(

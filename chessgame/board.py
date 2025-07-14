@@ -131,6 +131,10 @@ class Board:
             or (y2 == 0 and moved_piece.color == PieceColor.WHITE)
         )
 
+    def to_json(self):
+        # return {self.}
+        pass
+
 
 def get_default_board() -> Board:
     board = Board()

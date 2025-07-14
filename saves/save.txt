@@ -1,4 +1,3 @@
-Start pieces
 PieceColor.BLACK PieceType.ROOK None False False 0 0
 PieceColor.BLACK PieceType.KNIGHT None False False 1 0
 PieceColor.BLACK PieceType.BISHOP None False False 2 0
@@ -63,7 +62,6 @@ PieceColor.WHITE PieceType.KING None False False 4 7
 PieceColor.WHITE PieceType.BISHOP None False False 5 7
 PieceColor.WHITE PieceType.KNIGHT None False False 6 7
 PieceColor.WHITE PieceType.ROOK None False False 7 7
-End pieces
 [15, 10]17.824982400001318
 931.0218539000016
 921.1531636999971
