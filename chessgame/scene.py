@@ -445,28 +445,36 @@ class Save(Scene):
         elif self.save_button_rect.collidepoint(pos_x, pos_y):
             self.save_name_clicked = False
             pygame.key.stop_text_input()
-            with open(f".\\saves\\{self.save_name}.txt", "w") as f:
+            with open(f".\\saves\\{self.save_name}.json", "w") as f:
+                data_to_save = {}
+                piece_on_board = []
                 for row in self.board.tiles:
                     for tiles in row:
                         if tiles is None:
-                            f.write("None\n")
+                            piece_on_board.append(None)
                         else:
-                            f.write(f"{tiles.color} ")
-                            f.write(f"{tiles.piece_type} ")
-                            f.write(f"{tiles.enpassant} ")
-                            f.write(f"{tiles.has_moved} ")
-                            f.write(f"{tiles.is_invis} ")
-                            f.write(f"{tiles.pos_x} ")
-                            f.write(f"{tiles.pos_y}\n")
-                f.write(f"{TIME_CONTROL}\n")
-                f.write(f"{self.game_time}\n")
-                f.write(f"{self.white_time}\n")
-                f.write(f"{self.black_time}\n")
-                f.write(f"{self.turn}\n")
-                if self.piece is not None:
-                    f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
-                else:
-                    f.write(f"{None}")
+                            appending_piece_attributes = [str(tiles.color), str(tiles.piece_type), tiles.enpassant, tiles.has_moved, tiles.is_invis, tiles.pos_x, tiles.pos_y]
+                            piece_on_board.append(appending_piece_attributes)
+                            #TODO: depiece the piece to append
+
+                #             f.write(f"{tiles.color} ")
+                #             f.write(f"{tiles.piece_type} ")
+                #             f.write(f"{tiles.enpassant} ")
+                #             f.write(f"{tiles.has_moved} ")
+                #             f.write(f"{tiles.is_invis} ")
+                #             f.write(f"{tiles.pos_x} ")
+                #             f.write(f"{tiles.pos_y}\n")
+                data_to_save['piece_on_board'] = piece_on_board
+                data_to_save['TIME_CONTROL'] = TIME_CONTROL
+                data_to_save['game_time'] = self.game_time
+                data_to_save['white_time'] = self.white_time
+                data_to_save['black_time'] = self.black_time
+                data_to_save['turn'] = str(self.turn)
+                # if self.piece is not None:
+                #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
+                # else:
+                #     f.write(f"{None}")
+                json.dump(data_to_save, f)
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
@@ -486,6 +494,7 @@ class Save(Scene):
 
 
 class Load(Scene):
+    #TODO: MAKE return button :skull:
     def __init__(self) -> None:
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
