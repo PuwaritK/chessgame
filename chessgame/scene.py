@@ -502,7 +502,6 @@ class Save(Scene):
 
 
 class Load(Scene):
-    # TODO: MAKE return button :skull:
     def __init__(self) -> None:
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
