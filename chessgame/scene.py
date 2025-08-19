@@ -453,9 +453,17 @@ class Save(Scene):
                         if tiles is None:
                             piece_on_board.append(None)
                         else:
-                            appending_piece_attributes = [str(tiles.color), str(tiles.piece_type), tiles.enpassant, tiles.has_moved, tiles.is_invis, tiles.pos_x, tiles.pos_y]
+                            appending_piece_attributes = [
+                                str(tiles.color),
+                                str(tiles.piece_type),
+                                tiles.enpassant,
+                                tiles.has_moved,
+                                tiles.is_invis,
+                                tiles.pos_x,
+                                tiles.pos_y,
+                            ]
                             piece_on_board.append(appending_piece_attributes)
-                            #TODO: depiece the piece to append
+                            # TODO: depiece the piece to append
 
                 #             f.write(f"{tiles.color} ")
                 #             f.write(f"{tiles.piece_type} ")
@@ -464,12 +472,12 @@ class Save(Scene):
                 #             f.write(f"{tiles.is_invis} ")
                 #             f.write(f"{tiles.pos_x} ")
                 #             f.write(f"{tiles.pos_y}\n")
-                data_to_save['piece_on_board'] = piece_on_board
-                data_to_save['TIME_CONTROL'] = TIME_CONTROL
-                data_to_save['game_time'] = self.game_time
-                data_to_save['white_time'] = self.white_time
-                data_to_save['black_time'] = self.black_time
-                data_to_save['turn'] = str(self.turn)
+                data_to_save["piece_on_board"] = piece_on_board
+                data_to_save["TIME_CONTROL"] = TIME_CONTROL
+                data_to_save["game_time"] = self.game_time
+                data_to_save["white_time"] = self.white_time
+                data_to_save["black_time"] = self.black_time
+                data_to_save["turn"] = str(self.turn)
                 # if self.piece is not None:
                 #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
                 # else:
@@ -494,7 +502,7 @@ class Save(Scene):
 
 
 class Load(Scene):
-    #TODO: MAKE return button :skull:
+    # TODO: MAKE return button :skull:
     def __init__(self) -> None:
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
@@ -512,7 +520,9 @@ class Load(Scene):
     def on_click(self, delta_time: float) -> Scene | None:
         pos_x, pos_y = pygame.mouse.get_pos()
 
-        if (
+        if self.return_botton_rect.collidepoint(pos_x, pos_y):
+            return MenuScene()
+        elif (
             self.load_name_button_rect.collidepoint(pos_x, pos_y)
             and not self.load_name_clicked
         ):
@@ -532,7 +542,7 @@ class Load(Scene):
             self.load_error = False
             pygame.key.stop_text_input()
             try:
-                with open(f".\\saves\\{self.load_name}.txt", "r") as f:
+                with open(f".\\saves\\{self.load_name}.json", "r") as f:
                     linecount = 1
                     for line in f.readlines():
                         if linecount > 64:
@@ -585,6 +595,7 @@ class Load(Scene):
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
+
         load_name_button = self.button_font.render(
             f"Load Save Name: {self.load_name}", True, (0, 0, 0)
         )
@@ -598,6 +609,12 @@ class Load(Scene):
             center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
         )
         screen.blit(load_button, self.load_button_rect)
+
+        return_button = self.button_font.render("Return", True, (0, 0, 0))
+        self.return_botton_rect = return_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 7 / 8)
+        )
+        screen.blit(return_button, self.return_botton_rect)
 
         if self.load_error:
             error_text = self.menu_font.render(
