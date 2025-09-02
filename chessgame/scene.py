@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING
 import pygame
 import json
 from abc import ABC, abstractmethod
-
+import os
+from pathlib import Path
 from chessgame import background, piece
 from chessgame.board import Board, get_default_board
 from chessgame.display import (
@@ -37,6 +38,7 @@ class Scene(ABC):
 class GameScene(Scene):
     def __init__(self, scene: Scene | None = None) -> None:
         if scene is None:
+            self.save_name = ""
             self.board = get_default_board()
             self.images = get_image_dict()
             self.piece: Piece | None = None
@@ -48,6 +50,7 @@ class GameScene(Scene):
             self.game_time = 0
 
         elif isinstance(scene, Pause):
+            self.save_name = scene.save_name
             self.board = scene.board
             self.images = scene.images
             self.piece: Piece | None = scene.piece
@@ -59,6 +62,7 @@ class GameScene(Scene):
             self.game_time = scene.game_time
 
         elif isinstance(scene, Load):
+            self.save_name = scene.save_name
             self.board = scene.board
             self.images = get_image_dict()
             self.piece: Piece | None = scene.piece
@@ -118,7 +122,7 @@ class GameScene(Scene):
                 self.turn = PieceColor.WHITE
             if not can_continue(self.board, self.turn):
                 winner = get_winner(self.board, self.turn)
-                return GameOverScene(winner)
+                return GameOverScene(winner,self.save_name)
             return
         self.piece = self.board.get_piece(coord[0], coord[1])
         if self.piece is None or self.piece.color != self.turn:
@@ -133,9 +137,9 @@ class GameScene(Scene):
         assert self.black_time is not None
         assert self.game_time is not None
         if self.white_time < 0:
-            return GameOverScene(PieceColor.BLACK)
+            return GameOverScene(PieceColor.BLACK,self.save_name)
         if self.black_time < 0:
-            return GameOverScene(PieceColor.WHITE)
+            return GameOverScene(PieceColor.WHITE,self.save_name)
 
         game_time = self.text_font.render(
             f"Game Time: {self.game_time//60} minutes {self.game_time:.2f} seconds",
@@ -328,10 +332,11 @@ class SettingScene(Scene):
 
 
 class GameOverScene(Scene):
-    def __init__(self, winner: PieceColor | None) -> None:
+    def __init__(self, winner: PieceColor | None, save_name: str) -> None:
         self.winner = winner
         self.winner_font = pygame.font.SysFont(GAME_FONT, WINNER_SCENE_TEXT_SIZE)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
+        self.save_name = save_name
 
     def on_click(self, delta_time: float) -> "Scene | None":
         pos_x, pos_y = pygame.mouse.get_pos()
@@ -355,6 +360,12 @@ class GameOverScene(Scene):
             end_text = "WHITE WON!"
         else:
             end_text = "DRAW!"
+            
+        try:
+            os.remove(Path(f"saves\{self.save_name}.json"))
+   
+        except OSError:
+            pass
         winner_title = self.winner_font.render(end_text, True, (0, 0, 0))
         winner_title_rect = winner_title.get_rect(
             center=(
@@ -367,6 +378,7 @@ class GameOverScene(Scene):
 
 class Pause(Scene):
     def __init__(self, scene: GameScene) -> None:
+        self.save_name = scene.save_name
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
         self.board = scene.board
@@ -478,6 +490,7 @@ class Save(Scene):
                 data_to_save["white_time"] = self.white_time
                 data_to_save["black_time"] = self.black_time
                 data_to_save["turn"] = str(self.turn)
+                data_to_save["save_name"] = self.save_name
                 # if self.piece is not None:
                 #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
                 # else:
@@ -542,6 +555,7 @@ class Load(Scene):
             pygame.key.stop_text_input()
             try:
                 with open(f".\\saves\\{self.load_name}.json", "r") as f:
+                    #self.save_name = ...
                     linecount = 1
                     for line in f.readlines():
                         if linecount > 64:
