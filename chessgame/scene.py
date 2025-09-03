@@ -206,7 +206,7 @@ class MenuScene(Scene):
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
-        menu_title = self.menu_font.render("Goofy AHH Chessgame", True, (0, 0, 0))
+        menu_title = self.menu_font.render("Simple Chessgame", True, (0, 0, 0))
 
         self.menu_text_rect = menu_title.get_rect(
             center=(screen.get_width() / 2, screen.get_height() / 8)
