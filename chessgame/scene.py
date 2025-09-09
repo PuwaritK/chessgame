@@ -380,7 +380,7 @@ class GameOverScene(Scene):
 
 
 class Pause(Scene):
-    def __init__(self, scene: GameScene) -> None:
+    def __init__(self, scene: "GameScene | Save") -> None:
         self.time_control = scene.time_control
         self.save_name = scene.save_name
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
@@ -439,6 +439,7 @@ class Save(Scene):
         self.black_time = scene.black_time
         self.game_time = scene.game_time
         self.save_name_clicked = False
+        self.time_control = scene.time_control
 
     def on_click(self, delta_time: float) -> Scene | None:
         pos_x, pos_y = pygame.mouse.get_pos()

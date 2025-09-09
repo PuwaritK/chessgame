@@ -52,6 +52,8 @@ def run(screen: pygame.Surface):
                         scene = Pause(scene)
                     elif type(scene) == Pause:
                         scene = GameScene(scene)
+                    elif type(scene) == Save:
+                        scene = Pause(scene)
                 elif event.key == pygame.K_BACKSPACE:
                     if type(scene) == Save:
                         if scene.save_name_clicked:
