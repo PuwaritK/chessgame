@@ -10,7 +10,7 @@ from .display import (
     PROMOTION_PIECE_TYPES,
 )
 from .piece import Piece, PieceColor
-from .scene import Scene, MenuScene, GameScene, Pause, Save
+from .scene import Scene, MenuScene, GameScene, Pause, Save, Load
 from time import perf_counter
 
 MIN_WIDTH = 640
@@ -56,9 +56,14 @@ def run(screen: pygame.Surface):
                     if type(scene) == Save:
                         if scene.save_name_clicked:
                             scene.save_name = scene.save_name[0:-1]
+                    elif type(scene) == Load:
+                        if scene.load_name_clicked:
+                            scene.load_name = scene.load_name[0:-1]
             elif event.type == pygame.TEXTINPUT:
                 if type(scene) == Save:
                     scene.save_name += event.text
+                if type(scene) == Load:
+                    scene.load_name += event.text
         pygame.display.update()
         clock.tick(FPS)
         time_now = perf_counter()

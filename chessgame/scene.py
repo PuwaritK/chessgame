@@ -13,7 +13,7 @@ from chessgame.display import (
     render_pieces,
     render_promotion,
 )
-from chessgame.piece import Piece, PieceColor
+from chessgame.piece import Piece, PieceColor, PieceType
 
 BACKGROUND_COLOR = (247, 202, 201)  # Rose Quartz
 BLURRED_BLACK = (0, 0, 0, 192)
@@ -38,6 +38,7 @@ class Scene(ABC):
 class GameScene(Scene):
     def __init__(self, scene: Scene | None = None) -> None:
         if scene is None:
+            self.time_control = TIME_CONTROL
             self.save_name = ""
             self.board = get_default_board()
             self.images = get_image_dict()
@@ -45,11 +46,12 @@ class GameScene(Scene):
             self.available_moves: list[tuple[int, int]] | None = None
             self.turn = PieceColor.WHITE
             self.text_font = pygame.font.SysFont(GAME_FONT, TEXT_FONT)
-            self.white_time = 60 * TIME_CONTROL[0]
-            self.black_time = 60 * TIME_CONTROL[0]
+            self.white_time = 60 * self.time_control[0]
+            self.black_time = 60 * self.time_control[0]
             self.game_time = 0
 
         elif isinstance(scene, Pause):
+            self.time_control = scene.time_control
             self.save_name = scene.save_name
             self.board = scene.board
             self.images = scene.images
@@ -62,7 +64,8 @@ class GameScene(Scene):
             self.game_time = scene.game_time
 
         elif isinstance(scene, Load):
-            self.save_name = scene.save_name
+            self.time_control = scene.time_control
+            self.save_name = scene.load_name
             self.board = scene.board
             self.images = get_image_dict()
             self.piece: Piece | None = scene.piece
@@ -122,7 +125,7 @@ class GameScene(Scene):
                 self.turn = PieceColor.WHITE
             if not can_continue(self.board, self.turn):
                 winner = get_winner(self.board, self.turn)
-                return GameOverScene(winner,self.save_name)
+                return GameOverScene(winner, self.save_name)
             return
         self.piece = self.board.get_piece(coord[0], coord[1])
         if self.piece is None or self.piece.color != self.turn:
@@ -137,9 +140,9 @@ class GameScene(Scene):
         assert self.black_time is not None
         assert self.game_time is not None
         if self.white_time < 0:
-            return GameOverScene(PieceColor.BLACK,self.save_name)
+            return GameOverScene(PieceColor.BLACK, self.save_name)
         if self.black_time < 0:
-            return GameOverScene(PieceColor.WHITE,self.save_name)
+            return GameOverScene(PieceColor.WHITE, self.save_name)
 
         game_time = self.text_font.render(
             f"Game Time: {self.game_time//60} minutes {self.game_time:.2f} seconds",
@@ -360,10 +363,10 @@ class GameOverScene(Scene):
             end_text = "WHITE WON!"
         else:
             end_text = "DRAW!"
-            
+
         try:
-            os.remove(Path(f"saves\{self.save_name}.json"))
-   
+            os.remove(Path(f"saves/{self.save_name}.json"))
+
         except OSError:
             pass
         winner_title = self.winner_font.render(end_text, True, (0, 0, 0))
@@ -378,6 +381,7 @@ class GameOverScene(Scene):
 
 class Pause(Scene):
     def __init__(self, scene: GameScene) -> None:
+        self.time_control = scene.time_control
         self.save_name = scene.save_name
         self.menu_font = pygame.font.SysFont(GAME_FONT, MENU_FONT)
         self.button_font = pygame.font.SysFont(GAME_FONT, BUTTON_TEXT_SIZE)
@@ -466,8 +470,8 @@ class Save(Scene):
                             piece_on_board.append(None)
                         else:
                             appending_piece_attributes = [
-                                str(tiles.color),
-                                str(tiles.piece_type),
+                                tiles.color.value,
+                                tiles.piece_type.value,
                                 tiles.enpassant,
                                 tiles.has_moved,
                                 tiles.is_invis,
@@ -475,22 +479,12 @@ class Save(Scene):
                                 tiles.pos_y,
                             ]
                             piece_on_board.append(appending_piece_attributes)
-                            # TODO: depiece the piece to append
-
-                #             f.write(f"{tiles.color} ")
-                #             f.write(f"{tiles.piece_type} ")
-                #             f.write(f"{tiles.enpassant} ")
-                #             f.write(f"{tiles.has_moved} ")
-                #             f.write(f"{tiles.is_invis} ")
-                #             f.write(f"{tiles.pos_x} ")
-                #             f.write(f"{tiles.pos_y}\n")
                 data_to_save["piece_on_board"] = piece_on_board
                 data_to_save["TIME_CONTROL"] = TIME_CONTROL
                 data_to_save["game_time"] = self.game_time
                 data_to_save["white_time"] = self.white_time
                 data_to_save["black_time"] = self.black_time
-                data_to_save["turn"] = str(self.turn)
-                data_to_save["save_name"] = self.save_name
+                data_to_save["turn"] = self.turn.value
                 # if self.piece is not None:
                 #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
                 # else:
@@ -522,12 +516,13 @@ class Load(Scene):
         self.load_name = ""
         self.load_name_clicked = False
         self.load_error = False
-        self.board = get_default_board()
+        self.board: Board
         self.piece: Piece | None = None
-        self.turn = None
+        self.turn: PieceColor
         self.white_time: float | None = None
         self.black_time: float | None = None
         self.game_time: float | None = None
+        self.time_control: list[int]
 
     def on_click(self, delta_time: float) -> Scene | None:
         pos_x, pos_y = pygame.mouse.get_pos()
@@ -555,53 +550,30 @@ class Load(Scene):
             pygame.key.stop_text_input()
             try:
                 with open(f".\\saves\\{self.load_name}.json", "r") as f:
-                    #self.save_name = ...
-                    linecount = 1
-                    for line in f.readlines():
-                        if linecount > 64:
-                            pass
-                        if line != "None":
-                            data = line.split(" ")
-                            curr_piece = self.board.tiles[linecount // 9][
-                                linecount % 8
-                            ] = Piece(
-                                piece.PieceType(data[1]),
-                                piece.PieceColor(data[0]),
-                                self.board,
-                                int(data[5]),
-                                int(data[6]),
-                            )
-                            if data[2] != "None":
-                                curr_piece.enpassant = (
-                                    int(data[2][1]),
-                                    int(data[2][3]),
-                                )
-                            else:
-                                curr_piece.enpassant = None
-                            curr_piece.has_moved = bool(data[3])
-                            curr_piece.is_invis = bool(data[4])
-                            linecount += 1
-                        else:
-                            self.board.tiles[linecount // 9][linecount % 8] = None
-                            linecount += 1
-
-                        #                 f.write(f"{tiles.color} ")
-                        #                 f.write(f"{tiles.piece_type} ")
-                        #                 f.write(f"{tiles.enpassant} ")
-                        #                 f.write(f"{tiles.has_moved} ")
-                        #                 f.write(f"{tiles.is_invis} ")
-                        #                 f.write(f"{tiles.pos_x} ")
-                        #                 f.write(f"{tiles.pos_y}\n")
-                        #     f.write("End pieces\n")
-                        #     f.write(f"{TIME_CONTROL}\n")
-                        #     f.write(f"{self.game_time}\n")
-                        #     f.write(f"{self.white_time}\n")
-                        #     f.write(f"{self.black_time}\n")
-                        #     f.write(f"{self.turn}\n")
-                        # if self.piece is not None:
-                        #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
-                        # else:
-                        #     f.write(f"{None}")
+                    game_data = json.load(f)
+                    piece_on_board = game_data["piece_on_board"]
+                    self.board = Board()
+                    for piece in piece_on_board:
+                        if piece is None:
+                            self.board.tiles.append([None])
+                            continue
+                        created_piece = Piece(
+                            PieceType(piece[1]),
+                            PieceColor(piece[0]),
+                            self.board,
+                            piece[5],
+                            piece[6],
+                        )
+                        created_piece.enpassant = piece[2]
+                        created_piece.has_moved = piece[3]
+                        created_piece.is_invis = piece[4]
+                        self.board.pieces_left.append(created_piece)
+                    self.time_control = game_data["TIME_CONTROL"]
+                    self.game_time = game_data["game_time"]
+                    self.white_time = game_data["white_time"]
+                    self.black_time = game_data["black_time"]
+                    self.turn = PieceColor(game_data["turn"])
+                    # self.save_name = ...
                 return GameScene(self)
             except OSError:
                 self.load_error = True
