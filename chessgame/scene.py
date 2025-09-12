@@ -443,22 +443,12 @@ class Save(Scene):
 
     def on_click(self, delta_time: float) -> Scene | None:
         pos_x, pos_y = pygame.mouse.get_pos()
-
         if (
             self.save_name_button_rect.collidepoint(pos_x, pos_y)
             and not self.save_name_clicked
         ):
             self.save_name_clicked = True
             pygame.key.start_text_input()
-        elif (
-            self.save_name_button_rect.collidepoint(pos_x, pos_y)
-            and self.save_name_clicked
-        ) or (
-            not self.save_name_button_rect.collidepoint(pos_x, pos_y)
-            and self.save_name_clicked
-        ):
-            self.save_name_clicked = False
-            pygame.key.stop_text_input()
         elif self.save_button_rect.collidepoint(pos_x, pos_y):
             self.save_name_clicked = False
             pygame.key.stop_text_input()
@@ -486,11 +476,16 @@ class Save(Scene):
                 data_to_save["white_time"] = self.white_time
                 data_to_save["black_time"] = self.black_time
                 data_to_save["turn"] = self.turn.value
-                # if self.piece is not None:
-                #     f.write(f"[{self.piece.pos_x}, {self.piece.pos_y}]\n")
-                # else:
-                #     f.write(f"{None}")
                 json.dump(data_to_save, f)
+        elif (
+            self.save_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.save_name_clicked
+        ) or (
+            not self.save_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.save_name_clicked
+        ):
+            self.save_name_clicked = False
+            pygame.key.stop_text_input()
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
@@ -536,15 +531,6 @@ class Load(Scene):
         ):
             self.load_name_clicked = True
             pygame.key.start_text_input()
-        elif (
-            self.load_name_button_rect.collidepoint(pos_x, pos_y)
-            and self.load_name_clicked
-        ) or (
-            not self.load_name_button_rect.collidepoint(pos_x, pos_y)
-            and self.load_name_clicked
-        ):
-            self.load_name_clicked = False
-            pygame.key.stop_text_input()
         elif self.load_button_rect.collidepoint(pos_x, pos_y):
             self.load_name_clicked = False
             self.load_error = False
@@ -578,6 +564,15 @@ class Load(Scene):
                 return GameScene(self)
             except OSError:
                 self.load_error = True
+        elif (
+            self.load_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.load_name_clicked
+        ) or (
+            not self.load_name_button_rect.collidepoint(pos_x, pos_y)
+            and self.load_name_clicked
+        ):
+            self.load_name_clicked = False
+            pygame.key.stop_text_input()
 
     def on_loop(self, screen: pygame.Surface, delta_time: float):
         screen.fill(BACKGROUND_COLOR)
