@@ -2,8 +2,8 @@ import pygame
 
 # board goes from A to H columns and 1 to 8 rows (8*8)
 
-LIGHT_BROWN = pygame.Color(232, 221, 176)
-DARK_BROWN = pygame.Color(170, 141, 94)
+LIGHT_BROWN = pygame.Color(240, 217, 181)
+DARK_BROWN = pygame.Color(181, 136, 99)
 GREEN = pygame.Color(15, 157, 88)
 
 
