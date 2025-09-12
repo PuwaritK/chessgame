@@ -411,17 +411,17 @@ class Pause(Scene):
         )
         screen.blit(title, title_rect)
 
-        return_button = self.button_font.render("Return To Game", True, (0, 0, 0))
-        self.return_button_rect = return_button.get_rect(
-            center=(screen.get_width() / 2, screen.get_height() / 2)
-        )
-        screen.blit(return_button, self.return_button_rect)
-
         save_button = self.button_font.render("Save Game", True, (0, 0, 0))
         self.save_button_rect = save_button.get_rect(
-            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+            center=(screen.get_width() / 2, screen.get_height() * 2 / 4)
         )
         screen.blit(save_button, self.save_button_rect)
+
+        return_button = self.button_font.render("Return To Game", True, (0, 0, 0))
+        self.return_button_rect = return_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+        )
+        screen.blit(return_button, self.return_button_rect)
 
 
 class Save(Scene):
@@ -443,7 +443,10 @@ class Save(Scene):
 
     def on_click(self, delta_time: float) -> Scene | None:
         pos_x, pos_y = pygame.mouse.get_pos()
-        if (
+
+        if self.return_button_rect.collidepoint(pos_x, pos_y):
+            return Pause(self)
+        elif (
             self.save_name_button_rect.collidepoint(pos_x, pos_y)
             and not self.save_name_clicked
         ):
@@ -493,15 +496,21 @@ class Save(Scene):
             f"Save Name: {self.save_name}", True, (0, 0, 0)
         )
         self.save_name_button_rect = save_name_button.get_rect(
-            center=(screen.get_width() / 2, screen.get_height() / 2)
+            center=(screen.get_width() / 2, screen.get_height() * 1 / 4)
         )
         screen.blit(save_name_button, self.save_name_button_rect)
 
         save_button = self.button_font.render("Save", True, (0, 0, 0))
         self.save_button_rect = save_button.get_rect(
-            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+            center=(screen.get_width() / 2, screen.get_height() * 2 / 4)
         )
         screen.blit(save_button, self.save_button_rect)
+
+        return_button = self.button_font.render("Return To Game", True, (0, 0, 0))
+        self.return_button_rect = return_button.get_rect(
+            center=(screen.get_width() / 2, screen.get_height() * 3 / 4)
+        )
+        screen.blit(return_button, self.return_button_rect)
 
 
 class Load(Scene):
